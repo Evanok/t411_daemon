@@ -1,0 +1,3 @@
+- Improve sighandler, cannot catch properly SIGKILL
+- Storage secure password of t411.
+- conf file with email (to warn when new torrent are available) + t411 login info + list of movie/tv show to poll
