@@ -51,14 +51,13 @@ int read_config (str_t411_config* config)
 
   while (fgets(line, SIZE, config->fd_config) != NULL)
   {
+    /* truncate endline */
+    line[strlen(line) - 1] = 0;
     if (strncmp (line, "username", 8) == 0)
-    {
       strcpy (config->username, line + 9);
-    }
     else if (strncmp (line, "password", 8) == 0)
-    {
       strcpy (config->password, line + 9);
-    }
+
     PRINT_DEBUG ("[DEBUG] line : |%s|\n", line);
   }
 
