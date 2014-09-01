@@ -77,5 +77,7 @@ int process_message (char* url, char** arguments)
     curl_easy_cleanup(curl);
   }
 
+  free (message);
+
   return 0;
 }
