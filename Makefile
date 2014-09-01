@@ -14,7 +14,7 @@ CC=c99
 
 all: $(BINARY)
 
-$(BINARY): src/t411_daemon.o
+$(BINARY): src/t411_daemon.o src/config.o src/message.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
