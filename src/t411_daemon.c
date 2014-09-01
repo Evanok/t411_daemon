@@ -1,4 +1,6 @@
 #include "t411_daemon.h"
+#include "config.h"
+#include "message.h"
 
 void signal_handler(int sig)
 {
@@ -50,18 +52,34 @@ static void daemonize (char* name)
   chdir(WORKING_DIR);
 
   /* Close all open file descriptors */
-  for (int x = sysconf(_SC_OPEN_MAX); x > 0; x--)
-    close (x);
+  if (!DEBUG)
+  {
+    for (int x = sysconf(_SC_OPEN_MAX); x > 0; x--)
+      close (x);
+  }
 
   openlog (name, LOG_PID, LOG_DAEMON);
 }
 
 int main (int argc __attribute__((__unused__)), char* argv[])
 {
+  int err = 0;
+  str_t411_config config;
+
   daemonize (argv[0]);
   syslog (LOG_INFO, "%s daemon started.", argv[0]);
 
   /* init */
+  memset (&config, 0, sizeof(str_t411_config));
+
+  err = read_config (&config);
+  if (err) goto error;
+
+  err = get_authentificaton (config.username, config.password);
+  if (err) goto error;
+
+  process_message ("auth", config.username, config.password);
+
 
   /* The Big Loop */
   while (1)
@@ -70,8 +88,10 @@ int main (int argc __attribute__((__unused__)), char* argv[])
     sleep(30); /* wait 30 seconds */
   }
 
+
+  error:
   syslog (LOG_INFO, "%s daemon terminated.", argv[0]);
   closelog();
 
-  return EXIT_SUCCESS;
+  return err;
 }
