@@ -19,7 +19,8 @@
  #define DEBUG 0
 #endif
 
-#define PRINT_DEBUG(...) \
-            do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+#define T411_LOG(a, ...) \
+  do { if (DEBUG) fprintf(stderr, "\n[DEBUG] " __VA_ARGS__  ); else syslog(a, __VA_ARGS__);  } while (0)
+
 
 #endif /* !LOG_H_ */
