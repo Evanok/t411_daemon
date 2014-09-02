@@ -65,9 +65,11 @@ int main (int argc __attribute__((__unused__)), char* argv[])
 {
   int err = 0;
   str_t411_config config;
+  CURL *curl = NULL;
+
 
   daemonize (argv[0]);
-  syslog (LOG_INFO, "%s daemon started.", argv[0]);
+  T411_LOG (LOG_INFO, "%s daemon started.", argv[0]);
 
   /* init */
   memset (&config, 0, sizeof(str_t411_config));
@@ -75,23 +77,25 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   err = read_config (&config);
   if (err) goto error;
 
-  err = get_authentificaton (config.username, config.password);
+  /* init for libcurl */
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  err = get_authentification (curl, config.username, config.password);
   if (err) goto error;
-
-  process_message ("auth", config.username, config.password);
-
 
   /* The Big Loop */
   while (1)
   {
-    syslog (LOG_INFO, "%s is running...", argv[0]);
+    T411_LOG (LOG_INFO, "%s is running...", argv[0]);
     sleep(30); /* wait 30 seconds */
   }
 
 
   error:
-  syslog (LOG_INFO, "%s daemon terminated.", argv[0]);
+  T411_LOG (LOG_INFO, "%s daemon terminated.", argv[0]);
   closelog();
+
+  T411_LOG (LOG_INFO, "Process return code : %d", err);
 
   return err;
 }

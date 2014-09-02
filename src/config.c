@@ -11,13 +11,13 @@ int is_existing_conf (void)
     if(ENOENT == errno)
     {
       /* does not exist */
-      syslog (LOG_ERR, "%s does not exist. You must define a configuration file !", CONF_FILE);
+      T411_LOG (LOG_ERR, "%s does not exist. You must define a configuration file !", CONF_FILE);
       return 0;
     }
     else
     {
       perror("stat");
-      syslog (LOG_ERR, "%s perror", CONF_FILE);
+      T411_LOG (LOG_ERR, "%s perror", CONF_FILE);
       return 0;
     }
   }
@@ -43,11 +43,11 @@ int read_config (str_t411_config* config)
   if (config->fd_config == NULL)
   {
     perror ("fopen");
-    syslog (LOG_ERR, "Not able to open %s !", CONF_FILE);
+    T411_LOG (LOG_ERR, "Not able to open %s !", CONF_FILE);
     return -1;
   }
 
-  PRINT_DEBUG ("[DEBUG] read config file...\n");
+  T411_LOG (LOG_DEBUG, "read config file...\n");
 
   while (fgets(line, SIZE, config->fd_config) != NULL)
   {
@@ -58,11 +58,11 @@ int read_config (str_t411_config* config)
     else if (strncmp (line, "password", 8) == 0)
       strcpy (config->password, line + 9);
 
-    PRINT_DEBUG ("[DEBUG] line : |%s|\n", line);
+    T411_LOG (LOG_DEBUG, "line : |%s|\n", line);
   }
 
-  PRINT_DEBUG ("[DEBUG] username : |%s|\n", config->username);
-  PRINT_DEBUG ("[DEBUG] password : |%s|\n", config->password);
+  T411_LOG (LOG_DEBUG, "username : |%s|\n", config->username);
+  T411_LOG (LOG_DEBUG, "password : |%s|\n", config->password);
 
   return 0;
 }
