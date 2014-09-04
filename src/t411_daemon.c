@@ -45,7 +45,7 @@ static void daemonize (char* name)
   if (pid > 0)
     exit(EXIT_SUCCESS);
 
-  umask(0);
+  umask(027);
 
   /* Change the working directory to the root directory */
   /* or another appropriated directory */
