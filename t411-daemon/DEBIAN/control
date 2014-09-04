@@ -1,0 +1,9 @@
+Package: t411-daemon
+Version: 0.1
+Section: base
+Priority: optional
+Architecture: all
+Depends: libcurl3
+Maintainer: Arthur LAMBERT <lambertarthur22@gmail.com>
+Description: Daemon which poll t411 api to get last torrent info for your favorite tv shows and movies
+Homepage: http://arthurlambert.fr/robotique/wordpress

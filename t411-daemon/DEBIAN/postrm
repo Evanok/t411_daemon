@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "[t411_daemon] $0 is running..."
