@@ -5,8 +5,7 @@ else
     CFLAGS += -g -DNODEBUG
 endif
 
-PACKAGE_NAME = t411-daemon
-BINARY = t411_daemon
+BINARY = t411-daemon
 CFLAGS += -Werror -W -Wall -pedantic -Wformat -Wformat-security -Wextra
 CFLAGS += -Wextra -Wno-long-long -Wno-variadic-macros
 LDFLAGS += -lcurl
@@ -15,8 +14,19 @@ CC=c99
 
 all: $(BINARY)
 
+install: all
+	touch /etc/$(BINARY).conf
+	echo "username XXXXX" > /etc/$(BINARY).conf
+	echo "password XXXXX" >> /etc/$(BINARY).conf
+	chmod 777 /etc/$(BINARY).conf
+	cp bin/$(BINARY) /usr/bin/.
+
+uninstall:
+	rm -rf /etc/$(BINARY).conf
+	rm -rf /usr/bin/$(BINARY)
+
 $(BINARY): src/t411_daemon.o src/config.o src/message.o
-	mkdir bin
+	mkdir -p bin
 	$(CC) -o bin/$@ $^ $(LDFLAGS)
 
 %.o: %.c
@@ -27,13 +37,13 @@ clean:
 
 mrproper: clean
 	rm -rf bin
-	rm -rf $(PACKAGE_NAME)/etc
+	rm -rf $(BINARY)/etc
 
 prepare-pkg: all
-	mkdir -p $(PACKAGE_NAME)/etc/init.d
-	cp bin/$(BINARY) $(PACKAGE_NAME)/etc/init.d/.
+	mkdir -p $(BINARY)/etc/init.d
+	cp bin/$(BINARY) $(BINARY)/etc/init.d/.
 
 build-pkg: prepare-pkg
-	sudo dpkg-deb --build $(PACKAGE_NAME)
+	sudo dpkg-deb --build $(BINARY)
 
 .PHONY:
