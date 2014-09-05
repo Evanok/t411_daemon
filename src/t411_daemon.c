@@ -2,6 +2,8 @@
 #include "config.h"
 #include "message.h"
 
+#include <sys/file.h>
+
 void signal_handler(int sig)
 {
   switch(sig)
@@ -14,6 +16,31 @@ void signal_handler(int sig)
       exit(EXIT_SUCCESS);
       break;
   }
+}
+
+static void singleton (void)
+{
+  int fd;
+  char str[32];
+
+  fd = open(FILE_LOCK, O_RDWR | O_CREAT, 0640);
+  if (fd < 0)
+  {
+    T411_LOG (LOG_ERR, "Cannot open %s", FILE_LOCK);
+    exit (1);
+  }
+  if (flock(fd, LOCK_EX | LOCK_NB) < 0)
+  {
+    T411_LOG (LOG_INFO, "Cannot lock %s, only one instance of t411 daemon can be run", FILE_LOCK);
+    exit (1);
+  }
+  sprintf(str, "%d\n", getpid());
+  if (write(fd, str, strlen(str)) <= 0)
+  {
+    T411_LOG (LOG_INFO, "Cannot write in %s", FILE_LOCK);
+    exit (1);
+  }
+  T411_LOG (LOG_DEBUG, "Check on singleton : Success.");
 }
 
 static void daemonize (char* name)
@@ -67,6 +94,8 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   str_t411_config config;
   CURL *curl = NULL;
 
+  /* Check that we are running a single copy thanks to file locking feature */
+  singleton ();
 
   daemonize (argv[0]);
   T411_LOG (LOG_INFO, "%s daemon started.", argv[0]);

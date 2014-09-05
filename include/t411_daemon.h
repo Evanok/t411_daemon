@@ -17,6 +17,8 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "log.h"
 
@@ -35,6 +37,7 @@ typedef struct T411Config
   FILE* fd_config;
 } str_t411_config;
 
-#define WORKING_DIR "/"
+#define WORKING_DIR	"/"
+#define FILE_LOCK	"/var/lock/t411_daemon.lock"
 
 #endif /* !T411_DAEMON_H_ */
