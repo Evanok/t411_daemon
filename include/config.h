@@ -23,7 +23,7 @@
 #include <string.h>
 
 
-#define CONF_FILE "/run/t411/t411_daemon.conf"
+#define CONF_FILE "/etc/t411-daemon.conf"
 #define SIZE 256
 
 int read_config (str_t411_config* config);
