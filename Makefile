@@ -1,4 +1,4 @@
-B1;3409;0cDEBUG ?= 0
+DEBUG ?= 0
 ifeq ($(DEBUG), 1)
     CFLAGS += -g -DDEBUG
 else
@@ -8,9 +8,10 @@ endif
 BINARY = t411-daemon
 CFLAGS += -Werror -W -Wall -pedantic -Wformat -Wformat-security -Wextra
 CFLAGS += -Wextra -Wno-long-long -Wno-variadic-macros
+CFLAGS += -std=gnu99
 LDFLAGS += -lcurl
 HEADERS += -I./include
-CC=c99
+CC=gcc
 
 all: $(BINARY)
 

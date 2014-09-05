@@ -78,5 +78,11 @@ int read_config (str_t411_config* config)
   T411_LOG (LOG_DEBUG, "username : |%s|\n", config->username);
   T411_LOG (LOG_DEBUG, "password : |%s|\n", config->password);
 
+  if (config->password == NULL || config->username == NULL)
+  {
+    T411_LOG (LOG_ERR, "Not able to get username/password from  %s !", CONF_FILE);
+    return -1;
+  }
+
   return 0;
 }

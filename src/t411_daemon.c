@@ -18,7 +18,7 @@ void signal_handler(int sig)
     case SIGTERM:
     case SIGKILL:
       /* finalize the server */
-      syslog (LOG_INFO, "Daemon terminated by %d.", sig);
+      T411_LOG (LOG_INFO, "Daemon terminated by %d.", sig);
       closelog();
       exit(EXIT_SUCCESS);
       break;
@@ -130,7 +130,7 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* init for libcurl */
   curl_global_init(CURL_GLOBAL_ALL);
 
-  err = get_authentification (curl, config.username, config.password);
+  err = get_authentification (curl, &config);
   if (err) goto error;
 
   /* The Big Loop */

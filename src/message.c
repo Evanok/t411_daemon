@@ -1,6 +1,49 @@
 #include "message.h"
 
 /**
+ * \fn static size_t extract_data (char* data, char* key, char* storage)
+ * \brief Extrack data that fetch key in http message from t411
+ *
+ * \param data Pointer on http data
+ * \param key Key that we must use to find data in the message
+ * \param storage String where we want to store data extrated from http message
+ * \return size of extracted data. 0 in error case
+ */
+static size_t extract_data (char* data, char* key, char* storage)
+{
+  size_t len = strlen(data);
+  char* token = NULL;
+  char localdata[len + 1];
+  int find_key = 0;
+
+
+  strcpy (localdata, data);
+  token = strtok (localdata, "\",{}");
+
+  while (token)
+  {
+    if (find_key)
+    {
+      strcpy (storage, token);
+      return strlen(token);
+    }
+
+    if (strncmp (token, key, strlen(key)) == 0)
+    {
+      token = strtok (NULL, "\",{}");
+      if (!token)
+	return 0;
+      find_key = 1;
+    }
+    token = strtok (NULL, "\",{}");
+  }
+
+  T411_LOG (LOG_ERR, "Failed to find key : \"%s\" in http message", key);
+
+  return 0;
+}
+
+/**
  * \fn void* myrealloc (void *tr, size_t size)
  * \brief Realloc pointer with size
  *
@@ -105,16 +148,26 @@ char* process_message (CURL *curl, char* url, char* message)
  * \brief Function used to get token from t411 api
  *
  * \param curl Structure which allow us to send message to t411
- * \param username Username used to login on t411
+ * \param config Structure that contain username/password. We will also use it to store token info from t411
  * \param password Password used to login on t411
  * \return 0 on success else 1;
  */
-int get_authentification (CURL *curl, const char* username, const char* password)
+int get_authentification (CURL *curl, str_t411_config* config)
 {
   char message[256];
+  char* answer = NULL;
 
-  sprintf (message, "username=%s&password=%s", username, password);
-  process_message (curl, "auth", message);
+  sprintf (message, "username=%s&password=%s", config->username, config->password);
+  answer = process_message (curl, "auth", message);
+
+  if (strstr (answer, "error"))
+  {
+    T411_LOG (LOG_ERR, "Error during authentification process : %s\n", answer);
+    return 1;
+  }
+
+  extract_data (answer, "uid", config->uuid);
+  extract_data (answer, "token", config->token);
 
   return 0;
 }
