@@ -1,6 +1,13 @@
 #include "config.h"
 
-int is_existing_conf (void)
+/**
+ * \fn static int is_existing_conf (void)
+ * \brief Check that config file for the daemon is defined in the current system
+ *
+ * \param void
+ * \return integer. 1 means that the conf file exists. 0 is error.
+ */
+static int is_existing_conf (void)
 {
   struct stat s;
   int err;
@@ -29,6 +36,13 @@ int is_existing_conf (void)
   return 0;
 }
 
+/**
+ * \fn int read_config (str_t411_config* config)
+ * \brief Read the configuration file to get username/password and some other information
+ *
+ * \param config Structure which contains all data needed by the daemon
+ * \return Integer. 0 in success else error code.
+ */
 int read_config (str_t411_config* config)
 {
   char line [SIZE];

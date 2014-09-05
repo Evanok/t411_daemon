@@ -4,6 +4,13 @@
 
 #include <sys/file.h>
 
+/**
+ * \fn void signal_handler(int sig)
+ * \brief Handle signal received by t411 daemon
+ *
+ * \param sig Integer which identify the signal
+ * \return void
+ */
 void signal_handler(int sig)
 {
   switch(sig)
@@ -18,6 +25,13 @@ void signal_handler(int sig)
   }
 }
 
+/**
+ * \fn static void singleton (void)
+ * \brief Allow to be sure that only one occurence of this daemon is running
+ *
+ * \param void
+ * \return void
+ */
 static void singleton (void)
 {
   int fd;
@@ -43,6 +57,13 @@ static void singleton (void)
   T411_LOG (LOG_DEBUG, "Check on singleton : Success.");
 }
 
+/**
+ * \fn static void daemonize (char* name)
+ * \brief This function handle all the process to turn on my process as linux daemon
+ *
+ * \param name Name of the current process
+ * \return void
+ */
 static void daemonize (char* name)
 {
   pid_t pid;

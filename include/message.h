@@ -27,7 +27,19 @@ struct MemoryStruct
   size_t size;
 };
 
+/** @brief tutu
+ *
+ * blablabla
+ *
+ */
 char* process_message (CURL *curl, char* url, char* message);
+
+
+/** @brief titi
+ *
+ * encore du blabla
+ *
+ */
 int get_authentification (CURL *curl, const char* username, const char* password);
 
 #endif /* !MESSAGE_H_ */
