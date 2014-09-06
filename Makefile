@@ -58,4 +58,6 @@ doc:
 	cd doc && doxygen -w html header.html footer.html stylesheet.css t411_doxygen.conf
 	cd doc && doxygen t411_doxygen.conf
 
+test: all
+	sh test/check.sh
 .PHONY: doc
