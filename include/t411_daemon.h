@@ -28,9 +28,9 @@
  */
 typedef struct TvShows
 {
-  char name[64];	/*!< Name of the tv show*/
+  char name[64];	/*!< Name of the tv show */
   int season;		/*!< Number of season */
-  int episode;		/*!< Number of episode*/
+  int episode;		/*!< Number of episode */
 } str_tv_shows;
 
 /**

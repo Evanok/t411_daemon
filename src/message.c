@@ -44,7 +44,7 @@ static size_t extract_data (char* data, char* key, char* storage)
 }
 
 /**
- * \fn void* myrealloc (void *tr, size_t size)
+ * \fn static void* myrealloc (void *ptr, size_t size)
  * \brief Realloc pointer with size
  *
  * \param ptr Pointer to alloc/realloc
@@ -69,8 +69,7 @@ static void* myrealloc (void *ptr, size_t size)
  * \param data Pointer when we want to write data
  * \return Number of bytes written
  */
-static size_t
-WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *data)
+static size_t WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *data)
 {
   size_t realsize = size * nmemb;
   struct MemoryStruct *mem = (struct MemoryStruct *)data;
@@ -144,12 +143,11 @@ char* process_message (CURL *curl, char* url, char* message)
 }
 
 /**
- * \fn int get_authentification (CURL *curl, const char* username, const char* password)
+ * \fn int get_authentification (CURL *curl, str_t411_config* config)
  * \brief Function used to get token from t411 api
  *
  * \param curl Structure which allow us to send message to t411
- * \param config Structure that contain username/password. We will also use it to store token info from t411
- * \param password Password used to login on t411
+ * \param config Structure that contains username/password. We will also use it to store token info from t411
  * \return 0 on success else 1;
  */
 int get_authentification (CURL *curl, str_t411_config* config)
