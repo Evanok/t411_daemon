@@ -46,10 +46,12 @@ static int is_existing_conf (void)
 int read_config (str_t411_config* config)
 {
   char line [SIZE];
+  char* key = NULL;
+  char* data = NULL;
 
   if (!is_existing_conf ())
   {
-    return -1;
+    return 1;
   }
 
   config->fd_config = fopen (CONF_FILE, "r+");
@@ -58,7 +60,7 @@ int read_config (str_t411_config* config)
   {
     perror ("fopen");
     T411_LOG (LOG_ERR, "Not able to open %s !", CONF_FILE);
-    return -1;
+    return 1;
   }
 
   T411_LOG (LOG_DEBUG, "read config file...\n");
@@ -66,22 +68,25 @@ int read_config (str_t411_config* config)
   while (fgets(line, SIZE, config->fd_config) != NULL)
   {
     /* truncate endline */
-    line[strlen(line) - 1] = 0;
-    if (strncmp (line, "username", 8) == 0)
-      strcpy (config->username, line + 9);
-    else if (strncmp (line, "password", 8) == 0)
-      strcpy (config->password, line + 9);
-
-    T411_LOG (LOG_DEBUG, "line : |%s|\n", line);
+    key = strtok (line, "\t \n");
+    if (!key) continue;
+    data = strtok (NULL, "\t \n");
+    if (!data) continue;
+    if (strncmp (key, "username", 8) == 0)
+      strcpy (config->username, data);
+    else if (strncmp (key, "password", 8) == 0)
+      strcpy (config->password, data);
+    else
+      T411_LOG (LOG_DEBUG, "Unknow key and data in config file : |%s|%s|\n", key, data);
   }
 
   T411_LOG (LOG_DEBUG, "username : |%s|\n", config->username);
   T411_LOG (LOG_DEBUG, "password : |%s|\n", config->password);
 
-  if (config->password == NULL || config->username == NULL)
+  if (!config->password[0] || !config->username[0])
   {
     T411_LOG (LOG_ERR, "Not able to get username/password from  %s !", CONF_FILE);
-    return -1;
+    return 1;
   }
 
   return 0;

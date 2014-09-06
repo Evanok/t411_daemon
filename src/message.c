@@ -166,8 +166,9 @@ int get_authentification (CURL *curl, str_t411_config* config)
     return 1;
   }
 
-  extract_data (answer, "uid", config->uuid);
-  extract_data (answer, "token", config->token);
+  // if one of extraction return 0 I will also return to handle error.
+  if (extract_data (answer, "uid", config->uuid) == 0 || extract_data (answer, "token", config->token) == 0)
+    return 1;
 
   return 0;
 }
