@@ -1,3 +1,12 @@
 - Improve sighandler, cannot catch properly SIGKILL
 - Storage secure password of t411.
-- conf file with email (to warn when new torrent are available) + t411 login info + list of movie/tv show to poll
+- Must dump all config (new episode, season to poll) when daemon is killed. This feature is to be able to restrart daemon with new data directly !
+
+format of torrent info
+
+T A NAME SEASON EPISODE
+T S NAME SEASON EPISODE
+
+T for Torrent
+A for Animation
+S for Show

@@ -1,6 +1,39 @@
 #include "config.h"
 
 /**
+ * \fn static void extract_torrent_data (char* line, str_t411_config* config)
+ * \brief Extract information on torrent thanks to line from config file
+ *
+ * \param line char array which contain the current parsing line of the configuration file
+ * \param config Structure that contains all info from config file
+ * \return void
+ */
+static void extract_torrent_data (char* line, str_t411_config* config)
+{
+  char* token = NULL;
+  int col = 0;
+
+
+  config=config;
+  T411_LOG (LOG_DEBUG, "Current line : |%s|\n", line);
+
+  token = strtok (line, "\t \n");
+  while (token)
+  {
+    switch (col)
+    {
+      case 0:
+	break;
+      case 1:
+	break;
+      case 2:
+	break;
+    }
+    token = strtok (NULL, "\t \n");
+  }
+}
+
+/**
  * \fn static int is_existing_conf (void)
  * \brief Check that config file for the daemon is defined in the current system
  *
@@ -70,6 +103,11 @@ int read_config (str_t411_config* config)
     /* truncate endline */
     key = strtok (line, "\t \n");
     if (!key) continue;
+    if (key[0] == 'T')
+    {
+      extract_torrent_data (line, config);
+      continue;
+    }
     data = strtok (NULL, "\t \n");
     if (!data) continue;
     if (strncmp (key, "username", 8) == 0)
@@ -110,5 +148,6 @@ int read_config (str_t411_config* config)
     T411_LOG (LOG_ERR, "Not able to get mail info from  %s !", CONF_FILE);
     return 1;
   }
+
   return 0;
 }
