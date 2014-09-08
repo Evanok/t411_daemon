@@ -85,20 +85,24 @@ static size_t WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *d
 }
 
 /**
- * \fn char* process_message (CURL *curl, char* url, char* message)
+ * \fn char* process_message (CURL *curl, char* url, char* message, char* token)
  * \brief Generic function used to send data to t411 api
  *
  * \param curl Structure which allow us to send message to t411
  * \param url Url used to send message to t411. This url contains the hostname of t411 server + name of function to call in t411 api
  * \param message Data sent to t411 api
+ * \param token Token needed by t411 api for authorization http header
  * \return String that contains answer from t411 api
  */
-char* process_message (CURL *curl, char* url, char* message)
+char* process_message (CURL *curl, char* url, char* message, char* token)
 {
   CURLcode res;
   char buf_error[512];
   struct MemoryStruct chunk;
   char* full_url =  malloc (sizeof(char) * (strlen(url) + strlen(T411_URL) + 1));
+  struct curl_slist *headerlist=NULL;
+  char buf[256];
+
   sprintf (full_url, T411_URL, url);
 
   chunk.memory = NULL; /* we expect realloc(NULL, size) to work */
@@ -114,13 +118,24 @@ char* process_message (CURL *curl, char* url, char* message)
   }
 
   T411_LOG (LOG_DEBUG, "url : |%s|\n", full_url);
-  T411_LOG (LOG_DEBUG, "message : |%s|\n", message);
+  if (message)
+    T411_LOG (LOG_DEBUG, "message : |%s|\n", message);
 
+  if (token)
+  {
+    sprintf (buf, "Authorization: %s", token);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+  }
+
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
   curl_easy_setopt(curl, CURLOPT_URL, full_url);
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, buf_error);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_SECONDS);
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, message);
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(message));
+  if (message)
+  {
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, message);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(message));
+  }
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
@@ -156,7 +171,7 @@ int get_authentification (CURL *curl, str_t411_config* config)
   char* answer = NULL;
 
   sprintf (message, "username=%s&password=%s", config->username, config->password);
-  answer = process_message (curl, "auth", message);
+  answer = process_message (curl, "auth", message, NULL);
 
   if (strstr (answer, "error"))
   {
@@ -167,6 +182,13 @@ int get_authentification (CURL *curl, str_t411_config* config)
   // if one of extraction return 0 I will also return to handle error.
   if (extract_data (answer, "uid", config->uuid) == 0 || extract_data (answer, "token", config->token) == 0)
     return 1;
+
+  T411_LOG (LOG_DEBUG, "size token : %zu\n", sizeof(config->token));
+  T411_LOG (LOG_DEBUG, "longueur token : %zu\n", strlen(config->token));
+  T411_LOG (LOG_DEBUG, "token : %s\n", config->token);
+
+  memset (message, 0, 256);
+  answer = process_message (curl, "categories/tree", NULL, config->token);
 
   return 0;
 }

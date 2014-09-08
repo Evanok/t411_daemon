@@ -28,7 +28,7 @@ struct MemoryStruct
   size_t size;
 };
 
-char* process_message (CURL *curl, char* url, char* message);
+char* process_message (CURL *curl, char* url, char* message, char* token);
 int get_authentification (CURL *curl, str_t411_config* config);
 
 #endif /* !MESSAGE_H_ */

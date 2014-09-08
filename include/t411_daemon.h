@@ -42,9 +42,9 @@ typedef struct T411Config
   char username[64];		/*!< Username to login on t411 */
   char password[64];		/*!< Password to login on t411 */
   char uuid[32];		/*!< Uuid info from t411 */
-  char token[32];		/*!< Token used to be allowed to request t411 */
   str_tv_shows shows[256];	/*!< List of tv shows */
   FILE* fd_config;		/*!< fd on config file of the t411 daemon */
+  char token[64];		/*!< Token used to be allowed to request t411 */
 } str_t411_config;
 
 #define WORKING_DIR	"/"
