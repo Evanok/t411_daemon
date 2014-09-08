@@ -52,12 +52,12 @@ doc:
 	mkdir -p doc
 	doxygen -g doc/t411_doxygen.conf
 	sed -i 's/My Project/t411-daemon/' doc/t411_doxygen.conf
-	#sed -i 's/OUTPUT_DIRECTORY       =/OUTPUT_DIRECTORY       = doc/' doc/t411_doxygen.conf
 	sed -i 's/INPUT                  =/INPUT                  = ..\/src ..\/include/' doc/t411_doxygen.conf
 	sed -i 's/FILE_PATTERNS          =/FILE_PATTERNS          = *.c *.h/' doc/t411_doxygen.conf
 	cd doc && doxygen -w html header.html footer.html stylesheet.css t411_doxygen.conf
 	cd doc && doxygen t411_doxygen.conf
 
-test: all
-	sh test/check.sh
-.PHONY: doc
+test:
+	make clean && make DEBUG=1 && sh test/check.sh
+
+.PHONY: doc test
