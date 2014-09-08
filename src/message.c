@@ -123,7 +123,8 @@ char* process_message (CURL *curl, char* url, char* message, char* token)
 
   if (token)
   {
-    sprintf (buf, "Authorization: <%s>", token);
+    sprintf (buf, "Authorization: %s", token);
+    headerlist = curl_slist_append(headerlist, buf);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
   }
 
@@ -185,7 +186,11 @@ int get_authentification (CURL *curl, str_t411_config* config)
 
   T411_LOG (LOG_DEBUG, "token : %s\n", config->token);
 
-  answer = process_message (curl, "categories/tree", NULL, config->token);
+
+  /* test token */
+  memset(message, 0, 256);
+  sprintf (message, "users/profile/%s", config->uuid);
+  answer = process_message (curl, message, NULL, config->token);
 
   return 0;
 }
