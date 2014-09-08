@@ -41,6 +41,7 @@ typedef struct T411Config
 {
   char username[64];		/*!< Username to login on t411 */
   char password[64];		/*!< Password to login on t411 */
+  char mail[64];		/*!< Email to warn user when new data are available */
   char uuid[32];		/*!< Uuid info from t411 */
   str_tv_shows shows[256];	/*!< List of tv shows */
   FILE* fd_config;		/*!< fd on config file of the t411 daemon */

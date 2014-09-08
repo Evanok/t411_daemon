@@ -19,6 +19,7 @@ install: all
 	touch /etc/$(BINARY).conf
 	echo "username XXXXX" > /etc/$(BINARY).conf
 	echo "password XXXXX" >> /etc/$(BINARY).conf
+	echo "mail X@Y.Z" >> /etc/$(BINARY).conf
 	chmod 777 /etc/$(BINARY).conf
 	cp bin/$(BINARY) /usr/bin/.
 

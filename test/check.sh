@@ -58,6 +58,7 @@ process_config_test ()
     fi
 
     killall -q -9 ${binary}
+    cat $log && echo ""
     rm -f ${log}
     i=$(($i + 1))
 }
@@ -84,16 +85,30 @@ echo "password TUTU" > /etc/${binary}.conf
 process_config_test "Only password in config file" 0 "Not able to get username"
 echo "username titi" > /etc/${binary}.conf
 echo "password tutu" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
 process_config_test "Incorrect username and password in config file" 0 "Wrong password"
 echo "username Evanok" > /etc/${binary}.conf
 echo "password evangelius" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
 process_config_test "Correct username and password in config file" 1 "uid\":\"94588399"
+echo "username Evanok" > /etc/${binary}.conf
+echo "password evangelius" >> /etc/${binary}.conf
+process_config_test "Missing email info in config file" 0 "Not able to get mail"
 echo "# comment" >> /etc/${binary}.conf
 echo "   username     Evanok   " > /etc/${binary}.conf
 echo "# comment" >> /etc/${binary}.conf
 echo "password		evangelius" >> /etc/${binary}.conf
 echo "# comment" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
 process_config_test "Trailing whitespace in config file" 1 "uid\":\"94588399"
+echo "tutu username Evanok" > /etc/${binary}.conf
+echo "password evangelius tutu" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+process_config_test "Unexpected token in config file" 0 "Not able to get username"
+echo "username Evanok" > /etc/${binary}.conf
+echo "password evangelius" >> /etc/${binary}.conf
+echo "mail tututata.fr" >> /etc/${binary}.conf
+process_config_test "Wrong format on mail info in config file" 0 "Wrong format for mail"
 
 # Restore config fil
 if [ -f /tmp/${binary}.conf.old ]; then

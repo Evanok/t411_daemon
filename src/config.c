@@ -73,15 +73,31 @@ int read_config (str_t411_config* config)
     data = strtok (NULL, "\t \n");
     if (!data) continue;
     if (strncmp (key, "username", 8) == 0)
+    {
       strcpy (config->username, data);
+    }
     else if (strncmp (key, "password", 8) == 0)
+    {
       strcpy (config->password, data);
+    }
+    else if (strncmp (key, "mail", 4) == 0)
+    {
+      if (strchr (data, '@') == NULL)
+      {
+	T411_LOG (LOG_ERR, "Wrong format for mail info  %s !", CONF_FILE);
+	return 1;
+      }
+      strcpy (config->mail, data);
+    }
     else
+    {
       T411_LOG (LOG_DEBUG, "Unknow key and data in config file : |%s|%s|\n", key, data);
+    }
   }
 
   T411_LOG (LOG_DEBUG, "username : |%s|\n", config->username);
   T411_LOG (LOG_DEBUG, "password : |%s|\n", config->password);
+  T411_LOG (LOG_DEBUG, "mail : |%s|\n", config->mail);
 
   if (!config->password[0] || !config->username[0])
   {
@@ -89,5 +105,10 @@ int read_config (str_t411_config* config)
     return 1;
   }
 
+  if (!config->mail[0])
+  {
+    T411_LOG (LOG_ERR, "Not able to get mail info from  %s !", CONF_FILE);
+    return 1;
+  }
   return 0;
 }
