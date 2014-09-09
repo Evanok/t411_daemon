@@ -1,6 +1,25 @@
 #include "config.h"
 
 /**
+ * \fn static void ltrim (char* str)
+ * \brief Remove trailing whitespace from the left side of the char array
+ *
+ * \param str char array that we want to trim
+ * \return void
+ */
+static void ltrim (char* str)
+{
+  char* newstart = str;
+
+  while (isspace(*newstart))
+    newstart++;
+
+  if (str != newstart)
+    memmove (str, newstart, strlen( newstart) + 1);
+}
+
+
+/**
  * \fn static void extract_torrent_data (char* line, str_t411_config* config)
  * \brief Extract information on torrent thanks to line from config file
  *
@@ -12,25 +31,70 @@ static void extract_torrent_data (char* line, str_t411_config* config)
 {
   char* token = NULL;
   int col = 0;
+  str_torrent new_torrent;
+  char* tmp = NULL;
 
-
-  config=config;
-  T411_LOG (LOG_DEBUG, "Current line : |%s|\n", line);
-
+  memset (&new_torrent, 0, sizeof (new_torrent));
+  /* T S suits 4 11 */
   token = strtok (line, "\t \n");
   while (token)
   {
-    switch (col)
+    switch (col++)
     {
       case 0:
+	if (strncmp (token, "T", 1) != 0)
+	  goto error;;
 	break;
       case 1:
+	if (strncmp (token, "A", 1) == 0)
+	  new_torrent.type = ANIMATION;
+	else if (strncmp (token, "S", 1) == 0)
+	  new_torrent.type = TV_SHOW;
+	else
+	  goto error;
 	break;
       case 2:
+	memcpy (new_torrent.name, token, strlen(token + 1));
+	break;
+      case 3:
+	tmp = token;
+	while (tmp && isdigit(*tmp))
+	  tmp++;
+	if (tmp[0])
+	  goto error;
+	new_torrent.season = atoi(token);
+	break;
+      case 4:
+	tmp = token;
+	while (tmp && isdigit(*tmp))
+	  tmp++;
+	if (tmp[0])
+	  goto error;
+	new_torrent.episode = atoi(token);
+	break;
+      default:
+	goto error;
 	break;
     }
     token = strtok (NULL, "\t \n");
   }
+
+  if (config->nb_torrent == 0)
+  {
+    config->torrents = malloc(sizeof (*(config->torrents)) * (POOL_TORRENT));
+  }
+  else if (config->nb_torrent % 10 == 0)
+  {
+    config->torrents = realloc(config->torrents, sizeof (*(config->torrents)) * (config->nb_torrent + POOL_TORRENT));
+  }
+
+  memcpy (&config->torrents[config->nb_torrent++], &new_torrent, sizeof (str_torrent));
+  T411_LOG (LOG_DEBUG, "New torrent %d : %d %s %d %d\n", config->nb_torrent, new_torrent.type, new_torrent.name, new_torrent.season, new_torrent.episode);
+
+  return;
+
+  error:
+  T411_LOG (LOG_ERR, "Error during parsing torrent process on %d column", col);
 }
 
 /**
@@ -100,14 +164,15 @@ int read_config (str_t411_config* config)
 
   while (fgets(line, SIZE, config->fd_config) != NULL)
   {
-    /* truncate endline */
-    key = strtok (line, "\t \n");
-    if (!key) continue;
-    if (key[0] == 'T')
+    ltrim (line);
+    if (line[0] == 'T')
     {
       extract_torrent_data (line, config);
       continue;
     }
+    /* truncate endline */
+    key = strtok (line, "\t \n");
+    if (!key) continue;
     data = strtok (NULL, "\t \n");
     if (!data) continue;
     if (strncmp (key, "username", 8) == 0)

@@ -191,6 +191,8 @@ int get_authentification (CURL *curl, str_t411_config* config)
   memset(message, 0, 256);
   sprintf (message, "users/profile/%s", config->uuid);
   answer = process_message (curl, message, NULL, config->token);
+  /* end test token*/
 
   return 0;
 }
+

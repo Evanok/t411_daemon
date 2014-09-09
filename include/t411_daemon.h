@@ -59,6 +59,7 @@ typedef struct T411Config
   char mail[64];		/*!< Email to warn user when new data are available */
   char uuid[32];		/*!< Uuid info from t411 */
   str_torrent* torrents;	/*!< List of torrent to poll */
+  int nb_torrent;		/*!< Current number of torrent in list */
   FILE* fd_config;		/*!< fd on config file of the t411 daemon */
   char token[64];		/*!< Token used to be allowed to request t411 */
 } str_t411_config;

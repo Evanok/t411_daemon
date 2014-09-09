@@ -21,10 +21,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <ctype.h>
 
 #define CONF_FILE "/etc/t411-daemon.conf"
 #define SIZE 256
+/* alloc torrents array per size of 10 tu not realloc array at each new torrent */
+#define POOL_TORRENT 10
 
 int read_config (str_t411_config* config);
 
