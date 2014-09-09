@@ -5,6 +5,12 @@ else
     CFLAGS += -g -DNODEBUG
 endif
 
+COVERAGE ?= 0
+ifeq ($(COVERAGE), 1)
+    CFLAGS += --coverage
+    LDFLAGS += --coverage
+endif
+
 BINARY = t411-daemon
 CFLAGS += -Werror -W -Wall -pedantic -Wformat -Wformat-security -Wextra
 CFLAGS += -Wextra -Wno-long-long -Wno-variadic-macros
@@ -35,12 +41,15 @@ $(BINARY): src/t411_daemon.o src/config.o src/message.o
 	$(CC) -o $@ -c $< $(CFLAGS) $(HEADERS)
 clean:
 	find . -name "*.o" -print0 | xargs -0 rm -f
+	find . -name "*.gcda" -print0 | xargs -0 rm -f
+	find . -name "*.gcno" -print0 | xargs -0 rm -f
 	rm -f bin/$(BINARY)
 
 mrproper: clean
 	rm -rf bin
 	rm -rf $(BINARY)/etc
 	rm -rf doc
+	rm -rf gcov
 
 prepare-pkg: all
 	mkdir -p $(BINARY)/etc/init.d
@@ -61,4 +70,12 @@ doc:
 test:
 	make clean && make DEBUG=1 && sh test/check.sh
 
-.PHONY: doc test
+gcov:
+	make mrproper && make DEBUG=1 COVERAGE=1
+	sh test/check.sh
+	rm -rf gcov && mkdir -p gcov
+	lcov --capture --directory . --output-file gcov/$(BINARY).info
+	lcov --remove gcov/$(BINARY).info /usr/include/\* -o gcov/$(BINARY).info
+	genhtml gcov/$(BINARY).info --output-directory gcov/result
+
+.PHONY: doc test gcov
