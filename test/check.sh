@@ -1,5 +1,8 @@
 #!/bin/sh
 
+u=Evanok
+p=evangelius
+
 #env
 
 green='\e[0;32m'
@@ -33,8 +36,8 @@ is_alive ()
     fi
 }
 
-# Check on config file
-process_config_test ()
+# Check t411
+process_t411_test ()
 {
     # $1 label of test
     # $2 result expected
@@ -58,10 +61,13 @@ process_config_test ()
     fi
 
     killall -q -9 ${binary}
+    # uncomment next line to debug suit test
     cat $log && echo ""
     rm -f ${log}
     i=$(($i + 1))
 }
+
+killall -q -9 ${binary}
 
 # Backup existing conf file
 if [ -f /etc/${binary}.conf ]; then
@@ -72,43 +78,119 @@ if [ -f /etc/${binary}.conf ]; then
 fi
 
 
+# Test on user configuration dation
 sudo rm /etc/${binary}.conf
-process_config_test "No config file" 0 "does not exist"
+process_t411_test "No config file" 0 "does not exist"
 sudo touch /etc/${binary}.conf
-process_config_test "Bad permission on config file" 0 "Permission denied"
+process_t411_test "Bad permission on config file" 0 "Permission denied"
 sudo chmod 777 /etc/${binary}.conf
 sudo chown $USER /etc/${binary}.conf
-process_config_test "Empty config file" 0 "Not able to get username"
+process_t411_test "Empty config file" 0 "Not able to get username"
 echo "username TUTU" > /etc/${binary}.conf
-process_config_test "Only username in config file" 0 "Not able to get username"
+process_t411_test "Only username in config file" 0 "Not able to get username"
 echo "password TUTU" > /etc/${binary}.conf
-process_config_test "Only password in config file" 0 "Not able to get username"
+process_t411_test "Only password in config file" 0 "Not able to get username"
 echo "username titi" > /etc/${binary}.conf
 echo "password tutu" >> /etc/${binary}.conf
 echo "mail tutu@tata.fr" >> /etc/${binary}.conf
-process_config_test "Incorrect username and password in config file" 0 "Wrong password"
-echo "username Evanok" > /etc/${binary}.conf
-echo "password evangelius" >> /etc/${binary}.conf
+process_t411_test "Incorrect username and password in config file" 0 "Wrong password"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
 echo "mail tutu@tata.fr" >> /etc/${binary}.conf
-process_config_test "Correct username and password in config file" 1 "uid\":\"94588399"
-echo "username Evanok" > /etc/${binary}.conf
-echo "password evangelius" >> /etc/${binary}.conf
-process_config_test "Missing email info in config file" 0 "Not able to get mail"
+process_t411_test "Correct username and password in config file" 1 "uid\":\"94588399"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+process_t411_test "Missing email info in config file" 0 "Not able to get mail"
 echo "# comment" >> /etc/${binary}.conf
-echo "   username     Evanok   " > /etc/${binary}.conf
+echo "   username     ${u}   " > /etc/${binary}.conf
 echo "# comment" >> /etc/${binary}.conf
-echo "password		evangelius" >> /etc/${binary}.conf
+echo "password		${p}" >> /etc/${binary}.conf
 echo "# comment" >> /etc/${binary}.conf
 echo "mail tutu@tata.fr" >> /etc/${binary}.conf
-process_config_test "Trailing whitespace in config file" 1 "uid\":\"94588399"
-echo "tutu username Evanok" > /etc/${binary}.conf
-echo "password evangelius tutu" >> /etc/${binary}.conf
+process_t411_test "Trailing whitespace in config file" 1 "uid\":\"94588399"
+echo "tutu username ${u}" > /etc/${binary}.conf
+echo "password ${p} tutu" >> /etc/${binary}.conf
 echo "mail tutu@tata.fr" >> /etc/${binary}.conf
-process_config_test "Unexpected token in config file" 0 "Not able to get username"
-echo "username Evanok" > /etc/${binary}.conf
-echo "password evangelius" >> /etc/${binary}.conf
+process_t411_test "Unexpected token in config file" 0 "Unknow key and data in config file"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
 echo "mail tututata.fr" >> /etc/${binary}.conf
-process_config_test "Wrong format on mail info in config file" 0 "Wrong format for mail"
+process_t411_test "Wrong format on mail info in config file" 0 "Wrong format for mail"
+
+
+# Test on torrent info from config file
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "Y G zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Unknow key and data in config file"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T G zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T Gugu zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T A zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T S zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T A zfzfzfzef" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "     T S suits 3 23 COUCOU" >> /etc/${binary}.conf
+process_t411_test "Wrong format for torrent info in config file" 0 "Error during parsing torrent process"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "     T S suits 3 23" >> /etc/${binary}.conf
+process_t411_test "Trailing whitespace before torrent info" 1 "uid\":\"94588399"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "     T      S suits 3 23" >> /etc/${binary}.conf
+echo "T A	 attaque_des_titans 1 25	" >> /etc/${binary}.conf
+echo "     T S breaking_bad		10 23    " >> /etc/${binary}.conf
+process_t411_test "Multiple torrent info" 1 "uid\":\"94588399"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+./bin/${binary} 2>/dev/null 1>&2
+process_t411_test "Multiple instance of t411 daemon" 1 "only one instance of t411 daemon can be run"
+echo "username ${u}" > /etc/${binary}.conf
+echo "password ${p}" >> /etc/${binary}.conf
+echo "mail tutu@tata.fr" >> /etc/${binary}.conf
+echo "T S suits 3 1" >> /etc/${binary}.conf
+echo "T S suits 3 2" >> /etc/${binary}.conf
+echo "T S suits 3 3" >> /etc/${binary}.conf
+echo "T S suits 3 4" >> /etc/${binary}.conf
+echo "T S suits 3 5" >> /etc/${binary}.conf
+echo "T S suits 3 6" >> /etc/${binary}.conf
+echo "T S suits 3 7" >> /etc/${binary}.conf
+echo "T S suits 3 8" >> /etc/${binary}.conf
+echo "T S suits 3 9" >> /etc/${binary}.conf
+echo "T S suits 3 10" >> /etc/${binary}.conf
+echo "T S suits 3 11" >> /etc/${binary}.conf
+process_t411_test "More than 10 torrents info" 1 "uid\":\"94588399"
 
 # Restore config fil
 if [ -f /tmp/${binary}.conf.old ]; then
