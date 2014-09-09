@@ -16,7 +16,6 @@ static size_t extract_data (char* data, char* key, char* storage)
   char localdata[len + 1];
   int find_key = 0;
 
-
   strcpy (localdata, data);
   token = strtok (localdata, "\",{}");
 

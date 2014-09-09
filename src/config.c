@@ -25,26 +25,21 @@ static void ltrim (char* str)
  *
  * \param line char array which contain the current parsing line of the configuration file
  * \param config Structure that contains all info from config file
- * \return void
+ * \return int, 0 if success else 1
  */
-static void extract_torrent_data (char* line, str_t411_config* config)
+static int extract_torrent_data (char* line, str_t411_config* config)
 {
   char* token = NULL;
-  int col = 0;
+  int col = 1;
   str_torrent new_torrent;
   char* tmp = NULL;
 
   memset (&new_torrent, 0, sizeof (new_torrent));
-  /* T S suits 4 11 */
-  token = strtok (line, "\t \n");
+  token = strtok (line+1, "\t \n");
   while (token)
   {
     switch (col++)
     {
-      case 0:
-	if (strncmp (token, "T", 1) != 0)
-	  goto error;;
-	break;
       case 1:
 	if (strncmp (token, "A", 1) == 0)
 	  new_torrent.type = ANIMATION;
@@ -79,6 +74,9 @@ static void extract_torrent_data (char* line, str_t411_config* config)
     token = strtok (NULL, "\t \n");
   }
 
+  if (col != 5)
+    goto error;
+
   if (config->nb_torrent == 0)
   {
     config->torrents = malloc(sizeof (*(config->torrents)) * (POOL_TORRENT));
@@ -89,12 +87,13 @@ static void extract_torrent_data (char* line, str_t411_config* config)
   }
 
   memcpy (&config->torrents[config->nb_torrent++], &new_torrent, sizeof (str_torrent));
-  T411_LOG (LOG_DEBUG, "New torrent %d : %d %s %d %d\n", config->nb_torrent, new_torrent.type, new_torrent.name, new_torrent.season, new_torrent.episode);
+  //T411_LOG (LOG_DEBUG, "New torrent %d : %d %s %d %d\n", config->nb_torrent, new_torrent.type, new_torrent.name, new_torrent.season, new_torrent.episode);
 
-  return;
+  return 0;
 
   error:
   T411_LOG (LOG_ERR, "Error during parsing torrent process on %d column", col);
+  return 1;
 }
 
 /**
@@ -167,9 +166,17 @@ int read_config (str_t411_config* config)
     ltrim (line);
     if (line[0] == 'T')
     {
-      extract_torrent_data (line, config);
+      if (extract_torrent_data (line, config) != 0)
+	return 1;
       continue;
     }
+
+    if (line[0] == '#')
+    {
+      T411_LOG (LOG_DEBUG, "Comment line detected in config file : %s\n", line);
+      continue;
+    }
+
     /* truncate endline */
     key = strtok (line, "\t \n");
     if (!key) continue;
@@ -195,6 +202,7 @@ int read_config (str_t411_config* config)
     else
     {
       T411_LOG (LOG_DEBUG, "Unknow key and data in config file : |%s|%s|\n", key, data);
+      return 1;
     }
   }
 

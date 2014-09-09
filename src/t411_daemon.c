@@ -127,6 +127,9 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   err = read_config (&config);
   if (err) goto error;
 
+  /* DEBUG */
+  //dump_torrent (config);
+
   /* init for libcurl */
   curl_global_init(CURL_GLOBAL_ALL);
 
