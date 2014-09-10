@@ -1,6 +1,8 @@
 - Improve sighandler, cannot catch properly SIGKILL
 - Storage secure password of t411.
 - Must dump all config (new episode, season to poll) when daemon is killed. This feature is to be able to restrart daemon with new data directly !
+- Must implement rescue solution by http request without using appi
+- Must improve configuration file. To basic.
 
 format of torrent info
 
@@ -10,3 +12,62 @@ T S NAME SEASON EPISODE
 T for Torrent
 A for Animation
 S for Show
+
+
+Suits 3 04
+
+http://www.t411.me/torrents/search/?name=suits&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=940&term%5B45%5D%5B%5D=970&search=%40name+suits+&submit=Recherche
+
+
+Suits 3 05
+
+http://www.t411.me/torrents/search/?name=suits&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=941&term%5B45%5D%5B%5D=970&search=%40name+suits+&submit=Recherche
+
+Suits 2 07
+
+http://www.t411.me/torrents/search/?name=suits&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=943&term%5B45%5D%5B%5D=969&search=%40name+suits+&submit=Recherche
+
+
+Breaking Bad 2 07
+
+http://www.t411.me/torrents/search/?name=breaking+bad&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=943&term%5B45%5D%5B%5D=969&search=%40name+breaking+bad+&submit=Recherche
+
+Breaking Bad 1 01
+
+http://www.t411.me/torrents/search/?name=breaking+bad&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=937&term%5B45%5D%5B%5D=968&search=%40name+breaking+bad+&submit=Recherche
+
+Breaking Bad 2 02
+
+http://www.t411.me/torrents/search/?name=breaking+bad&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=938&term%5B45%5D%5B%5D=969&search=%40name+breaking+bad+&submit=Recherche
+
+
+
+subcat 433 = tv show
+       455 = animation
+Season info : &term%5B45%5D%5B%5D=
+Episode info : &term%5B46%5D%5B%5D=
+Langage : &term%5B17%5D%5B%5D=
+Season 1 : 968
+Episode 1 : 937
+VOSTFR = 721
+
+
+
+Format de l'url :
+http://www.t411.me/torrents/search/?name=$(NAME)&description=&file=&user=&cat=210&subcat=$(CATEGORY)&term%5B46%5D%5B%5D=$(EPISODE)&term%5B45%5D%5B%5D=$(SEASON)&term%5B17%5D%5B%5D=($LANGAGE)&search=%40name+$(NAME)+&submit=Recherche
+
+http://www.t411.me/torrents/search/?name=tutu&description=&file=&user=&cat=210&subcat=433&term%5B46%5D%5B%5D=938&term%5B45%5D%5B%5D=969&term%5B17%5D%5B%5D=721&search=%40name+tutu+&submit=Recherche
+
+Cas ou aucun resultat pour la recherche :
+
+<p class="error textcenter">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore &#233;t&#233; upload&#233;.</p>
+        <a href="/" title="Torrent411">t411.me</a> (Version 2.3) - Aucun droit r&#233;serv&#233;!
+
+
+Cas ou site en maintenance :
+
+<title>503 Service Temporarily Unavailable</title>
+<h1>www.t411.me</h1>
+<h2>Service temporairement indisponible!</h2>
+<p>Le site est actuellement en cours de maintenance. Il sera de retour rapidement!<br/>
+<br/>Merci de votre compr&#233;hension!</p>
