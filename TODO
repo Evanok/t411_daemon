@@ -2,7 +2,10 @@
 - Storage secure password of t411.
 - Must dump all config (new episode, season to poll) when daemon is killed. This feature is to be able to restrart daemon with new data directly !
 - Must implement rescue solution by http request without using appi
-- Must improve configuration file. To basic.
+- Must improve configuration file. Can  have issues when torrent name contains whitespace in name
+- Must give to the user the possibility to run the binary as simple process and not daemon
+To have this feature we can perhaps add a configure to set all value as --enable-debug, --disable-demon
+- Can see that I have strange result on gcov result. Need to investigate
 
 format of torrent info
 
