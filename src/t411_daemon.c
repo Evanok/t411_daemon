@@ -16,7 +16,6 @@ void signal_handler(int sig)
   switch(sig)
   {
     case SIGTERM:
-    case SIGKILL:
       /* finalize the server */
       T411_LOG (LOG_INFO, "Daemon terminated by %d.", sig);
       closelog();
@@ -82,8 +81,8 @@ static void daemonize (char* name)
   //TODO: Implement a working signal handler */
   signal(SIGCHLD, SIG_IGN);
   signal(SIGHUP, SIG_IGN);
-  signal(SIGTERM, signal_handler);
   signal(SIGKILL, signal_handler);
+  signal(SIGTERM, signal_handler);
 
   pid = fork();
 
@@ -113,7 +112,6 @@ int main (int argc __attribute__((__unused__)), char* argv[])
 {
   int err = 0;
   str_t411_config config;
-  CURL *curl = NULL;
 
   /* Check that we are running a single copy thanks to file locking feature */
   singleton ();
@@ -130,10 +128,9 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* DEBUG */
   //dump_torrent (config);
 
-  /* init for libcurl */
-  curl_global_init(CURL_GLOBAL_ALL);
+  T411_LOG (LOG_DEBUG, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore\n");
 
-  err = get_authentification (curl, &config);
+  err = get_authentification (&config);
   if (err) goto error;
 
   /* The Big Loop */

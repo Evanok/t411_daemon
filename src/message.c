@@ -87,28 +87,29 @@ static size_t WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *d
  * \fn char* process_message (CURL *curl, char* url, char* message, char* token)
  * \brief Generic function used to send data to t411 api
  *
- * \param curl Structure which allow us to send message to t411
  * \param url Url used to send message to t411. This url contains the hostname of t411 server + name of function to call in t411 api
  * \param message Data sent to t411 api
  * \param token Token needed by t411 api for authorization http header
  * \return String that contains answer from t411 api
  */
-char* process_message (CURL *curl, char* url, char* message, char* token)
+char* process_message (char* url, char* message, char* token)
 {
   CURLcode res;
+  static CURL *curl = NULL;
   char buf_error[512];
   struct MemoryStruct chunk;
   char* full_url =  malloc (sizeof(char) * (strlen(url) + strlen(T411_URL) + 1));
   struct curl_slist *headerlist=NULL;
   char buf[256];
 
+  memset (&chunk, 0, sizeof(chunk));
   sprintf (full_url, T411_URL, url);
 
-  chunk.memory = NULL; /* we expect realloc(NULL, size) to work */
-  chunk.size = 0;      /* no data at this point */
-
   if (curl == NULL)
+  {
     curl = curl_easy_init();
+    curl_global_init(CURL_GLOBAL_ALL);
+  }
 
   if (!curl)
   {
@@ -161,17 +162,16 @@ char* process_message (CURL *curl, char* url, char* message, char* token)
  * \fn int get_authentification (CURL *curl, str_t411_config* config)
  * \brief Function used to get token from t411 api
  *
- * \param curl Structure which allow us to send message to t411
  * \param config Structure that contains username/password. We will also use it to store token info from t411
  * \return 0 on success else 1;
  */
-int get_authentification (CURL *curl, str_t411_config* config)
+int get_authentification (str_t411_config* config)
 {
   char message[256];
   char* answer = NULL;
 
   sprintf (message, "username=%s&password=%s", config->username, config->password);
-  answer = process_message (curl, "auth", message, NULL);
+  answer = process_message ("auth", message, NULL);
 
   if (strstr (answer, "error"))
   {
@@ -188,11 +188,83 @@ int get_authentification (CURL *curl, str_t411_config* config)
 
   /* test token */
   /*
-  memset(message, 0, 256);
-  sprintf (message, "users/profile/%s", config->uuid);
-  answer = process_message (curl, message, NULL, config->token);
+    memset(message, 0, 256);
+    sprintf (message, "users/profile/%s", config->uuid);
+    answer = process_message (message, NULL, config->token);
   */
   /* end test token*/
+
+  return 0;
+}
+
+int looking_for_torrent (str_t411_config* config)
+{
+  int index;
+  CURLcode res;
+  static CURL *curl = NULL;
+  char buf_error[512];
+  struct MemoryStruct chunk;
+  char url[256];
+
+  if (curl == NULL)
+  {
+    curl = curl_easy_init();
+    curl_global_init(CURL_GLOBAL_ALL);
+  }
+
+  if (!curl)
+  {
+    T411_LOG (LOG_ERR, "Failed to initialiaze curl module");
+    return 1;
+  }
+
+  for (index = 0; index < config->nb_torrent; index++)
+  {
+    memset (&chunk, 0, sizeof(chunk));
+    memset (url, 0, 256);
+    sprintf (url, T411_HTTP_URL, config->torrents[index].name, config->torrents[index].type, config->torrents[index].episode + INDEX_EPISODE, config->torrents[index].season + INDEX_SEASON, VOSTFR, config->torrents[index].name);
+
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, buf_error);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_SECONDS);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+    {
+      T411_LOG (LOG_ERR, "result != CURLE_OK");
+      T411_LOG (LOG_ERR, "Error : |%s|", buf_error);
+      return 1;
+    }
+
+    if (!chunk.memory)
+    {
+      T411_LOG (LOG_ERR, "chunk memory is NULL !");
+      return 1;
+    }
+
+    if (strstr (chunk.memory, "<title>503 Service Temporarily Unavailable</title>"))
+    {
+      T411_LOG (LOG_ERR, "t411 503 Service Temporarily Unavailable");
+      return 1;
+    }
+
+    if (strstr (chunk.memory, "<title>503 Service Temporarily Unavailable</title>"))
+    {
+      T411_LOG (LOG_ERR, "t411 503 Service Temporarily Unavailable");
+      return 1;
+    }
+
+
+    //T411_LOG (LOG_DEBUG, "answer : |%s|\n", chunk.memory);
+
+    if (strstr (chunk.memory, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore") != NULL)
+      T411_LOG (LOG_DEBUG, "Torrent found\n");
+    else
+      T411_LOG (LOG_DEBUG, "Torrent not found\n");
+  }
 
   return 0;
 }

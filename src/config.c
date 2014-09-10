@@ -87,7 +87,6 @@ static int extract_torrent_data (char* line, str_t411_config* config)
   }
 
   memcpy (&config->torrents[config->nb_torrent++], &new_torrent, sizeof (str_torrent));
-  //T411_LOG (LOG_DEBUG, "New torrent %d : %d %s %d %d\n", config->nb_torrent, new_torrent.type, new_torrent.name, new_torrent.season, new_torrent.episode);
 
   return 0;
 

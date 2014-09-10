@@ -62,7 +62,7 @@ process_t411_test ()
 
     killall -q -9 ${binary}
     # uncomment next line to debug suit test
-    cat $log && echo ""
+    #cat $log && echo ""
     rm -f ${log}
     i=$(($i + 1))
 }

@@ -29,8 +29,8 @@
 enum type_torrent
 {
   UNDEFINED	= 0,	/**< Undefined type */
-  ANIMATION,		/**< Animation type */
-  TV_SHOW,		/**< Tv show type */
+  ANIMATION 	= 455,	/**< Animation type */
+  TV_SHOW 	= 433 	/**< Tv show type */
 };
 
 
