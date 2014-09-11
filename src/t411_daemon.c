@@ -133,6 +133,8 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   err = get_authentification (&config);
   if (err) goto error;
 
+  looking_for_torrent(&config);
+
   /* The Big Loop */
   while (1)
   {

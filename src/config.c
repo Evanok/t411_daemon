@@ -34,6 +34,8 @@ static int extract_torrent_data (char* line, str_t411_config* config)
   str_torrent new_torrent;
   char* tmp = NULL;
 
+  //T411_LOG (LOG_DEBUG, "line : %s", line);
+
   memset (&new_torrent, 0, sizeof (new_torrent));
   token = strtok (line+1, "\t \n");
   while (token)

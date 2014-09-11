@@ -1,6 +1,38 @@
 #include "message.h"
 
 /**
+ * \fn static int sendmail(const char *to, const char *from, const char *subject, const char *message)
+ * \brief Send message though email
+ *
+ * \param to Email address of the receiver
+ * \param from Email address of the sender
+ * \param subject Subject of the mail
+ * \param message Message of the mail
+ * \return int 0 if success else 1
+ */
+static int sendmail(const char *to, const char *from, const char *subject, const char *message)
+{
+  int retval = 1;
+  FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
+
+  if (mailpipe != NULL)
+  {
+    fprintf(mailpipe, "To: %s\n", to);
+    fprintf(mailpipe, "From: %s\n", from);
+    fprintf(mailpipe, "Subject: %s\n\n", subject);
+    fwrite(message, 1, strlen(message), mailpipe);
+    fwrite(".\n", 1, 2, mailpipe);
+    pclose(mailpipe);
+    retval = 0;
+  }
+  else
+  {
+    T411_LOG (LOG_ERR, "Failed to invoke sendmail");
+  }
+  return retval;
+}
+
+/**
  * \fn static size_t extract_data (char* data, char* key, char* storage)
  * \brief Extrack data that fetch key in http message from t411
  *
@@ -187,11 +219,9 @@ int get_authentification (str_t411_config* config)
 
 
   /* test token */
-  /*
     memset(message, 0, 256);
     sprintf (message, "users/profile/%s", config->uuid);
     answer = process_message (message, NULL, config->token);
-  */
   /* end test token*/
 
   return 0;
@@ -223,6 +253,8 @@ int looking_for_torrent (str_t411_config* config)
     memset (&chunk, 0, sizeof(chunk));
     memset (url, 0, 256);
     sprintf (url, T411_HTTP_URL, config->torrents[index].name, config->torrents[index].type, config->torrents[index].episode + INDEX_EPISODE, config->torrents[index].season + INDEX_SEASON, VOSTFR, config->torrents[index].name);
+
+    T411_LOG (LOG_DEBUG, "html url : %s\n", url);
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -258,12 +290,17 @@ int looking_for_torrent (str_t411_config* config)
     }
 
 
-    //T411_LOG (LOG_DEBUG, "answer : |%s|\n", chunk.memory);
+    //T411_LOG (LOG_DEBUG, "answer : \n |%s|\n", chunk.memory);
 
-    if (strstr (chunk.memory, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore") != NULL)
+    if (strstr (chunk.memory, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore") == NULL)
+    {
       T411_LOG (LOG_DEBUG, "Torrent found\n");
+      sendmail ("lambertarthur22@gmail.com", "t411-daemon-alert@gmail.com", "test", "un message\n");
+    }
     else
+    {
       T411_LOG (LOG_DEBUG, "Torrent not found\n");
+    }
   }
 
   return 0;
