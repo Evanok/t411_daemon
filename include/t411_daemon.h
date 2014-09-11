@@ -22,6 +22,9 @@
 
 #include "log.h"
 
+/* We will pool t411 every day */
+#define LOOP_POOLING 86400
+
 /**
  * \enum type_torrent
  * \brief Specifies possibility of type for torrent

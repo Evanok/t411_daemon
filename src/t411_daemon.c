@@ -126,20 +126,27 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   if (err) goto error;
 
   /* DEBUG */
-  //dump_torrent (config);
+  /*
+  dump_torrent (config);
+  */
 
   T411_LOG (LOG_DEBUG, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore\n");
+
+  /* global init for curl*/
+  curl_global_init(CURL_GLOBAL_ALL);
 
   err = get_authentification (&config);
   if (err) goto error;
 
-  looking_for_torrent(&config);
+  T411_LOG (LOG_INFO, "%s is running...", argv[0]);
 
   /* The Big Loop */
   while (1)
   {
-    T411_LOG (LOG_INFO, "%s is running...", argv[0]);
-    sleep(30); /* wait 30 seconds */
+    looking_for_torrent(&config);
+    return 0;
+    T411_LOG (LOG_INFO, "Next pooling in %d ...", LOOP_POOLING);
+    sleep(LOOP_POOLING); /* wait 30 seconds */
   }
 
 

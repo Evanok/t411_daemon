@@ -37,7 +37,7 @@ static int extract_torrent_data (char* line, str_t411_config* config)
   //T411_LOG (LOG_DEBUG, "line : %s", line);
 
   memset (&new_torrent, 0, sizeof (new_torrent));
-  token = strtok (line+1, "\t \n");
+  token = strtok (line + 1, "\t \n");
   while (token)
   {
     switch (col++)
@@ -51,7 +51,7 @@ static int extract_torrent_data (char* line, str_t411_config* config)
 	  goto error;
 	break;
       case 2:
-	memcpy (new_torrent.name, token, strlen(token + 1));
+	strncpy (new_torrent.name, token, strlen(token) + 1);
 	break;
       case 3:
 	tmp = token;
