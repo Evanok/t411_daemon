@@ -184,7 +184,7 @@ static char* process_http_message (char* url, char* message, char* token)
     return NULL;
   }
 
-  //T411_LOG (LOG_DEBUG, "answer : |%s|\n", chunk.memory);
+  T411_LOG (LOG_DEBUG, "answer : |%s|\n", chunk.memory);
   return chunk.memory;
 }
 
@@ -259,8 +259,6 @@ int looking_for_torrent (str_t411_config* config)
       T411_LOG (LOG_ERR, "t411 503 Service Temporarily Unavailable");
       return 1;
     }
-
-    //T411_LOG (LOG_DEBUG, "answer : \n |%s|\n", chunk.memory);
 
     if (strstr (answer, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore") == NULL)
     {

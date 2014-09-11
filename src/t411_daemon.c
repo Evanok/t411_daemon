@@ -130,8 +130,6 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   dump_torrent (config);
   */
 
-  T411_LOG (LOG_DEBUG, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore\n");
-
   /* global init for curl*/
   curl_global_init(CURL_GLOBAL_ALL);
 
@@ -143,8 +141,7 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* The Big Loop */
   while (1)
   {
-    looking_for_torrent(&config);
-    return 0;
+    //looking_for_torrent(&config);
     T411_LOG (LOG_INFO, "Next pooling in %d ...", LOOP_POOLING);
     sleep(LOOP_POOLING); /* wait 30 seconds */
   }
