@@ -25,6 +25,10 @@
 /* We will pool t411 every day */
 #define LOOP_POOLING 86400
 
+/* integer to sum to get real episode/season number */
+#define INDEX_EPISODE 936
+#define INDEX_SEASON 967
+
 /**
  * \enum type_torrent
  * \brief Specifies possibility of type for torrent
@@ -63,7 +67,6 @@ typedef struct T411Config
   char uuid[32];		/*!< Uuid info from t411 */
   str_torrent* torrents;	/*!< List of torrent to poll */
   int nb_torrent;		/*!< Current number of torrent in list */
-  FILE* fd_config;		/*!< fd on config file of the t411 daemon */
   char token[64];		/*!< Token used to be allowed to request t411 */
 } str_t411_config;
 

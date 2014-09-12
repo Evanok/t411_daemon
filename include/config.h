@@ -29,5 +29,6 @@
 #define POOL_TORRENT 10
 
 int read_config (str_t411_config* config);
+int dump_config (str_t411_config* config);
 
 #endif /* !CONFIG_H_ */

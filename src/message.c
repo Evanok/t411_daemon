@@ -326,6 +326,7 @@ int t411_extract_torrent_info (char* data, str_t411_config* config)
     /* get url for download torrent */
        /* -> NOT MANDATORY WE CAN PERHAPS*/
     /* update episode + season number to get next ! */
+    /* Must also add + 1 to episode id in config */
 
     sprintf (download_url, "%s%s%s", T411_API_URL, T411_API_GETDETAIL_URL, id);
     answer = process_http_message (download_url, NULL, config->token);

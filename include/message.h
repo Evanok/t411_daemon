@@ -13,8 +13,6 @@
 
 /* 721 is fetch to VOSTF in t411 database */
 #define VOSTFR 721
-#define INDEX_EPISODE 936
-#define INDEX_SEASON 967
 #define T411_HTTP_URL "http://www.t411.me/torrents/search/?name=%s&description=&file=&user=&cat=210&subcat=%d&term%%5B46%%5D%%5B%%5D=%d&term%%5B45%%5D%%5B%%5D=%d&term%%5B17%%5D%%5B%%5D=%d&search=%%40name+%s+&submit=Recherche"
 #define T411_API_URL "http://api.t411.me?_url="
 #define T411_API_AUTH_URL "/auth"
