@@ -1,7 +1,7 @@
 #include "message.h"
 
 /**
- * \fn static int sendmail(const char *to, const char *from, const char *subject, const char *message)
+ * \fn int sendmail(const char *to, const char *from, const char *subject, const char *message)
  * \brief Send message though email
  *
  * \param to Email address of the receiver
@@ -10,7 +10,7 @@
  * \param message Message of the mail
  * \return int 0 if success else 1
  */
-static int sendmail(const char *to, const char *from, const char *subject, const char *message)
+int sendmail(const char *to, const char *from, const char *subject, const char *message)
 {
   int retval = 1;
   FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
@@ -116,7 +116,7 @@ static size_t WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *d
 }
 
 /**
- * \fn static char* process_http_message (CURL *curl, char* url, char* message, char* token)
+ * \fn static char* process_http_message (char* url, char* message, char* token)
  * \brief Generic function used to send data to t411 api
  *
  * \param url Url used to request http by libcurl
@@ -189,13 +189,13 @@ static char* process_http_message (char* url, char* message, char* token)
 }
 
 /**
- * \fn int get_authentification (CURL *curl, str_t411_config* config)
+ * \fn int t411_get_authentification (str_t411_config* config)
  * \brief Function used to get token from t411 api
  *
  * \param config Structure that contains username/password. We will also use it to store token info from t411
  * \return 0 on success else 1;
  */
-int get_authentification (str_t411_config* config)
+int t411_get_authentification (str_t411_config* config)
 {
   char message[256];
   char* answer = NULL;
@@ -204,7 +204,7 @@ int get_authentification (str_t411_config* config)
   sprintf (message, "username=%s&password=%s", config->username, config->password);
 
   url = malloc (sizeof(char) * (strlen(T411_API_URL) + strlen(T411_API_AUTH_URL) + 1));
-  sprintf (url, T411_API_URL, T411_API_AUTH_URL);
+  sprintf (url, "%s%s", T411_API_URL, T411_API_AUTH_URL);
 
   answer = process_http_message (url, message, NULL);
 
@@ -218,8 +218,10 @@ int get_authentification (str_t411_config* config)
 
 
   /* test token */
+  /*
   free (answer);
   answer = process_http_message ("http://www.t411.me/public/index.php?_url=/users/profile/94588399", NULL, config->token);
+  */
   /* end test token*/
 
   free (answer);
@@ -235,7 +237,14 @@ int get_authentification (str_t411_config* config)
   return 1;
 }
 
-int looking_for_torrent (str_t411_config* config)
+/**
+ * \fn int t411_search_torrent_from_config (str_t411_config* config)
+ * \brief For each torrent of config structure, request the torrent though http search
+ *
+ * \param config Structure that contains torrents info
+ * \return 0 on success else 1;
+ */
+int t411_search_torrent_from_config (str_t411_config* config)
 {
   int index;
   char url[256];
@@ -263,8 +272,7 @@ int looking_for_torrent (str_t411_config* config)
     if (strstr (answer, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore") == NULL)
     {
       T411_LOG (LOG_DEBUG, "Torrent found\n");
-      if (answer == NULL)
-      sendmail ("lambertarthur22@gmail.com", "t411-daemon-alert@gmail.com", "test", "un message\n");
+      t411_extract_torrent_info (answer, config);
     }
     else
     {
@@ -278,3 +286,58 @@ int looking_for_torrent (str_t411_config* config)
   return 0;
 }
 
+/**
+ * \fn int t411_extract_torrent_info (char* data, str_t411_config* config)
+ * \brief Extract torrent url and download torrent
+ *
+ * \param data array of char which contains html code from search result
+ * \param config structure that will allow us to know token and update torrent info
+ * \return 0 on success else 1;
+ */
+int t411_extract_torrent_info (char* data, str_t411_config* config)
+{
+  char* name_token = data;
+  char* id_token = NULL;
+  char download_url[256];
+  char id[32];
+  char* answer = NULL;
+
+  name_token = strstr(data, T411_TORRENT_TOKEN);
+  if (name_token == NULL)
+    goto error;
+
+  while (name_token)
+  {
+    id_token = strstr(name_token, T411_ID_TOKEN);
+    if (id_token == NULL)
+      goto error;
+
+    name_token = strstr(id_token + strlen(T411_ID_TOKEN), "\"");
+
+    if (name_token == NULL)
+      goto error;
+
+    strncpy (id, id_token + strlen(T411_ID_TOKEN), (name_token - (id_token + strlen(T411_ID_TOKEN))));
+    T411_LOG (LOG_DEBUG, "Torrent id : |%s|\n", id);
+
+    /* TODO THERE*/
+    /* extract from html page info like size + number of person who download it */
+    /* + link of torrent page */
+    /* get url for download torrent */
+       /* -> NOT MANDATORY WE CAN PERHAPS*/
+    /* update episode + season number to get next ! */
+
+    sprintf (download_url, "%s%s%s", T411_API_URL, T411_API_GETDETAIL_URL, id);
+    answer = process_http_message (download_url, NULL, config->token);
+
+    T411_LOG (LOG_WARNING, "answer : |%s|\n", answer);
+
+    name_token = strstr(name_token, T411_TORRENT_TOKEN);
+  }
+
+  return 0;
+
+  error:
+  T411_LOG (LOG_ERR, "Error during parsing of html result from t411 search page");
+  return 1;
+}

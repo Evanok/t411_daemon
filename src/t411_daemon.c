@@ -133,7 +133,7 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* global init for curl*/
   curl_global_init(CURL_GLOBAL_ALL);
 
-  err = get_authentification (&config);
+  err = t411_get_authentification (&config);
   if (err) goto error;
 
   T411_LOG (LOG_INFO, "%s is running...", argv[0]);
@@ -141,7 +141,7 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* The Big Loop */
   while (1)
   {
-    //looking_for_torrent(&config);
+    t411_search_torrent_from_config (&config);
     T411_LOG (LOG_INFO, "Next pooling in %d ...", LOOP_POOLING);
     sleep(LOOP_POOLING); /* wait 30 seconds */
   }
