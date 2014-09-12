@@ -1,10 +1,10 @@
 - Storage secure password of t411.
-- Must dump all config (new episode, season to poll) when daemon is killed. This feature is to be able to restrart daemon with new data directly !
 - Must implement rescue solution by http request without using appi (currently incoming !)
 - Must give to the user the possibility to run the binary as simple process and not daemon
 To have this feature we can perhaps add a configure to set all value as --enable-debug, --disable-demon
 - Can see that I have strange result on gcov result. Need to investigate
 - Need to configure postfix to test send mail feature
+- When torrent is not found I must try Season + 1, Episode 1 to handle the case or we switch to the next seaoson !
 
 format of torrent info
 
