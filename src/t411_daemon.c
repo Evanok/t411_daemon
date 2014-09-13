@@ -141,8 +141,8 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* The Big Loop */
   while (1)
   {
-    t411_search_torrent_from_config (&config);
-    dump_config (&config);
+    t411_api_search_torrent_from_config (&config);
+    //dump_config (&config);
     T411_LOG (LOG_INFO, "Next pooling in %d ...", LOOP_POOLING);
     sleep(LOOP_POOLING); /* wait 30 seconds */
   }

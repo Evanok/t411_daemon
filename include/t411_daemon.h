@@ -29,6 +29,10 @@
 #define INDEX_EPISODE 936
 #define INDEX_SEASON 967
 
+#define TERM_LANGAGE 17
+#define TERM_EPISODE 46
+#define TERM_SEASON 45
+
 /**
  * \enum type_torrent
  * \brief Specifies possibility of type for torrent

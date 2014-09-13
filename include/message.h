@@ -16,6 +16,7 @@
 #define T411_HTTP_URL "http://www.t411.me/torrents/search/?name=%s&description=&file=&user=&cat=210&subcat=%d&term%%5B46%%5D%%5B%%5D=%d&term%%5B45%%5D%%5B%%5D=%d&term%%5B17%%5D%%5B%%5D=%d&search=%%40name+%s+&submit=Recherche"
 #define T411_API_URL "http://api.t411.me?_url="
 #define T411_API_AUTH_URL "/auth"
+#define T411_API_TORRENT_SEARCH "/torrents/search/"
 #define T411_API_GETDETAIL_URL "/torrents/details/"
 #define TIMEOUT_SECONDS 10
 
@@ -38,8 +39,10 @@ struct MemoryStruct
 };
 
 int t411_get_authentification (str_t411_config* config);
-int t411_search_torrent_from_config (str_t411_config* config);
-int t411_extract_torrent_info (char* data, str_t411_config* config);
+int t411_html_search_torrent_from_config (str_t411_config* config);
+int t411_html_extract_torrent_info (char* data, str_t411_config* config);
+int t411_api_search_torrent_from_config (str_t411_config* config);
+int t411_api_extract_torrent_info (char* data, str_t411_config* config);
 int t411_download_torrent (char* data, str_t411_config* config);
 
 int sendmail(const char *to, const char *from, const char *subject, const char *message);

@@ -238,13 +238,13 @@ int t411_get_authentification (str_t411_config* config)
 }
 
 /**
- * \fn int t411_search_torrent_from_config (str_t411_config* config)
+ * \fn int t411_html_search_torrent_from_config (str_t411_config* config)
  * \brief For each torrent of config structure, request the torrent though http search
  *
  * \param config Structure that contains torrents info
  * \return 0 on success else 1;
  */
-int t411_search_torrent_from_config (str_t411_config* config)
+int t411_html_search_torrent_from_config (str_t411_config* config)
 {
   int index;
   char url[256];
@@ -272,7 +272,7 @@ int t411_search_torrent_from_config (str_t411_config* config)
     if (strstr (answer, "<p class=\"error textcenter\">Aucun R&#233;sultat Aucun<br/> .torrent n'a encore") == NULL)
     {
       T411_LOG (LOG_DEBUG, "Torrent found\n");
-      t411_extract_torrent_info (answer, config);
+      t411_html_extract_torrent_info (answer, config);
     }
     else
     {
@@ -287,14 +287,57 @@ int t411_search_torrent_from_config (str_t411_config* config)
 }
 
 /**
- * \fn int t411_extract_torrent_info (char* data, str_t411_config* config)
+ * \fn int t411_api_search_torrent_from_config (str_t411_config* config)
+ * \brief For each torrent of config structure, request the torrent though http search
+ *
+ * \param config Structure that contains torrents info
+ * \return 0 on success else 1;
+ */
+int t411_api_search_torrent_from_config (str_t411_config* config)
+{
+  int index;
+  char url[256];
+  char* answer = NULL;
+
+  for (index = 0; index < config->nb_torrent; index++)
+  {
+    memset (url, 0, 256);
+    sprintf (url, "%s%s%s&cid=%d&term[%d][]=%d&term[%d][]=%d&term[%d][]=%d", T411_API_URL, T411_API_TORRENT_SEARCH, config->torrents[index].name, config->torrents[index].type, TERM_LANGAGE, VOSTFR, TERM_SEASON, config->torrents[index].season + INDEX_SEASON, TERM_EPISODE, config->torrents[index].episode + INDEX_EPISODE);
+
+    answer = process_http_message (url, NULL, config->token);
+
+    if (answer == NULL)
+    {
+      T411_LOG (LOG_ERR, "t411 503 Service Temporarily Unavailable");
+      return 1;
+    }
+
+    if (strstr (answer, "\"total\":0") == NULL)
+    {
+      T411_LOG (LOG_DEBUG, "Torrent found\n");
+    }
+    else
+    {
+      T411_LOG (LOG_DEBUG, "Torrent not found\n");
+    }
+
+    sleep (5);
+    free (answer);
+  }
+
+  return 0;
+}
+
+
+/**
+ * \fn int t411_html_extract_torrent_info (char* data, str_t411_config* config)
  * \brief Extract torrent url and download torrent
  *
  * \param data array of char which contains html code from search result
  * \param config structure that will allow us to know token and update torrent info
  * \return 0 on success else 1;
  */
-int t411_extract_torrent_info (char* data, str_t411_config* config)
+int t411_html_extract_torrent_info (char* data, str_t411_config* config)
 {
   char* name_token = data;
   char* id_token = NULL;
