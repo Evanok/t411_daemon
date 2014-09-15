@@ -30,4 +30,14 @@
 #define dump_torrent(config)
 #endif
 
+#if DEBUG
+#define dump_result(results, nb) {						\
+    int i;for(i=0;i < nb;i++) T411_LOG(LOG_DEBUG, "\nid %d\nname %s\nleechers %d\nseeders %d\nsize %d Mo\ncompleted %d\n____\n", results[i].id, results[i].name, results[i].leechers, results[i].seeders, results[i].size / 1048576 , results[i].completed);\
+  }
+#else
+#define dump_torrent(config, size)
+#endif
+
+
+
 #endif /* !LOG_H_ */
