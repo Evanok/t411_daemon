@@ -33,15 +33,15 @@ int sendmail(const char *to, const char *from, const char *subject, const char *
 }
 
 /**
- * \fn static size_t extract_data (char* data, char* key, char* storage)
- * \brief Extrack data that fetch key in http message from t411
+ * \fn static size_t extract_string_from_data (char* data, char* key, char* storage)
+ * \brief Extract data that fetch key in http message from t411
  *
  * \param data Pointer on http data
  * \param key Key that we must use to find data in the message
  * \param storage String where we want to store data extrated from http message
  * \return size of extracted data. 0 in error case
  */
-static size_t extract_data (char* data, char* key, char* storage)
+static size_t extract_string_from_data (char* data, char* key, char* storage)
 {
   size_t len = strlen(data);
   char* token = NULL;
@@ -72,6 +72,70 @@ static size_t extract_data (char* data, char* key, char* storage)
   T411_LOG (LOG_ERR, "Failed to find key : \"%s\" in http message", key);
 
   return 0;
+}
+
+/**
+ * \fn static int is_digit (const char* s)
+ * \brief Check taht all char on char array is a digit
+ *
+ * \param s char of array
+ * \return 1 if char array contains only digit else 0
+ */
+static int is_digit (const char* s)
+{
+  while (*s && (*s >= 48 && *s <= 57))
+    s++;
+
+  if (!*s )
+    return 1;
+  return 0;
+}
+
+/**
+ * \fn static size_t extract_int_from_data (char* data, char* key, int* storage)
+ * \brief Extract data that fetch key in http message from t411
+ *
+ * \param data Pointer on http data
+ * \param key Key that we must use to find data in the message
+ * \param storage uint where we want to store data extrated from http message
+ * \return 0 if success else 1
+ */
+static int extract_int_from_data (char* data, char* key, int* storage)
+{
+  size_t len = strlen(data);
+  char* token = NULL;
+  char localdata[len + 1];
+  int find_key = 0;
+
+  strcpy (localdata, data);
+  token = strtok (localdata, "\",{}");
+
+  while (token)
+  {
+    if (find_key)
+    {
+      if (!is_digit (token))
+      {
+	T411_LOG (LOG_ERR, "Error none digit found in token : %s\n", token);
+	return 1;
+      }
+      *storage = atoi (token);
+      return 0;
+    }
+
+    if (strncmp (token, key, strlen(key)) == 0)
+    {
+      token = strtok (NULL, "\",{}");
+      if (!token)
+	return 1;
+      find_key = 1;
+    }
+    token = strtok (NULL, "\",{}");
+  }
+
+  T411_LOG (LOG_ERR, "Failed to find key : \"%s\" in http message", key);
+
+  return 1;
 }
 
 /**
@@ -211,7 +275,7 @@ int t411_get_authentification (str_t411_config* config)
   if (answer == NULL || strstr (answer, "error")) goto error;
 
   // if one of extraction return 0 I will also return to handle error.
-  if (extract_data (answer, "uid", config->uuid) == 0 || extract_data (answer, "token", config->token) == 0)
+  if (extract_string_from_data (answer, "uid", config->uuid) == 0 || extract_string_from_data (answer, "token", config->token) == 0)
     goto error;
 
   T411_LOG (LOG_DEBUG, "token : %s\n", config->token);
@@ -219,8 +283,8 @@ int t411_get_authentification (str_t411_config* config)
 
   /* test token */
   /*
-  free (answer);
-  answer = process_http_message ("http://www.t411.me/public/index.php?_url=/users/profile/94588399", NULL, config->token);
+    free (answer);
+    answer = process_http_message ("http://www.t411.me/public/index.php?_url=/users/profile/94588399", NULL, config->token);
   */
   /* end test token*/
 
@@ -230,8 +294,14 @@ int t411_get_authentification (str_t411_config* config)
   return 0;
 
   error:
+
+  T411_LOG (LOG_ERR, "Error during authentification process");
+
   if (answer)
+  {
+    T411_LOG (LOG_ERR, "<%s>", answer);
     free (answer);
+  }
   free (url);
 
   return 1;
@@ -295,14 +365,26 @@ int t411_html_search_torrent_from_config (str_t411_config* config)
  */
 int t411_api_search_torrent_from_config (str_t411_config* config)
 {
-  int index;
+  int torrent_index = 0;
   char url[256];
   char* answer = NULL;
+  int first_try = 1;
 
-  for (index = 0; index < config->nb_torrent; index++)
+  while(torrent_index < config->nb_torrent)
   {
     memset (url, 0, 256);
-    sprintf (url, "%s%s%s&cid=%d&term[%d][]=%d&term[%d][]=%d&term[%d][]=%d", T411_API_URL, T411_API_TORRENT_SEARCH, config->torrents[index].name, config->torrents[index].type, TERM_LANGAGE, VOSTFR, TERM_SEASON, config->torrents[index].season + INDEX_SEASON, TERM_EPISODE, config->torrents[index].episode + INDEX_EPISODE);
+    if (first_try)
+    {
+      sprintf (url, "%s%s%s&cid=%d&term[%d][]=%d&term[%d][]=%d&term[%d][]=%d", T411_API_URL, T411_API_TORRENT_SEARCH, config->torrents[torrent_index].name, config->torrents[torrent_index].type, TERM_LANGAGE, VOSTFR, TERM_SEASON, config->torrents[torrent_index].season + INDEX_SEASON, TERM_EPISODE, config->torrents[torrent_index].episode + INDEX_EPISODE);
+      first_try = 0;
+    }
+    else
+    {
+      /* On second try, try to get next season info ! */
+      sprintf (url, "%s%s%s&cid=%d&term[%d][]=%d&term[%d][]=%d&term[%d][]=%d", T411_API_URL, T411_API_TORRENT_SEARCH, config->torrents[torrent_index].name, config->torrents[torrent_index].type, TERM_LANGAGE, VOSTFR, TERM_SEASON, config->torrents[torrent_index].season + INDEX_SEASON + 1, TERM_EPISODE, INDEX_EPISODE + 1);
+      first_try = 1;
+      torrent_index++;
+    }
 
     answer = process_http_message (url, NULL, config->token);
 
@@ -315,12 +397,44 @@ int t411_api_search_torrent_from_config (str_t411_config* config)
     if (strstr (answer, "\"total\":0") == NULL)
     {
       T411_LOG (LOG_DEBUG, "Torrent found\n");
+      int nb_result = 0;
+      int result_index;
+      str_torrent_result* results;
+
+      extract_int_from_data(answer, "total", &nb_result);
+      T411_LOG (LOG_DEBUG, "nb_result : %d\n", nb_result);
+      results = malloc (sizeof (*results) * nb_result);
+
+      char* tmp = strstr (answer, "[");
+      for (result_index = 0; tmp && result_index < nb_result; result_index++)
+      {
+	tmp = strstr (tmp, "{");
+	if (!tmp)
+	  break;
+	extract_int_from_data (tmp, "id", &(results[result_index].id));
+	extract_string_from_data (tmp, "name", results[result_index].name);
+	extract_int_from_data (tmp, "seeders", &(results[result_index].seeders));
+	extract_int_from_data (tmp, "leechers", &(results[result_index].leechers));
+	extract_int_from_data (tmp, "size", &(results[result_index].size));
+	extract_int_from_data (tmp, "times_completed", &(results[result_index].completed));
+	tmp = strstr (tmp, "}");
+	if (!tmp)
+	  break;
+      }
+      dump_result (results, nb_result);
+      free (results);
+
+      /* torrent found we can try to get next ! */
+      first_try = 1;
+      torrent_index++;
     }
     else
     {
-      T411_LOG (LOG_DEBUG, "Torrent not found\n");
+      if (!first_try)
+      {
+	T411_LOG (LOG_DEBUG, "Torrent not found\n");
+      }
     }
-
     sleep (5);
     free (answer);
   }
@@ -367,7 +481,7 @@ int t411_html_extract_torrent_info (char* data, str_t411_config* config)
     /* extract from html page info like size + number of person who download it */
     /* + link of torrent page */
     /* get url for download torrent */
-       /* -> NOT MANDATORY WE CAN PERHAPS*/
+    /* -> NOT MANDATORY WE CAN PERHAPS*/
     /* update episode + season number to get next ! */
     /* Must also add + 1 to episode id in config */
 

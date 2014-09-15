@@ -26,7 +26,7 @@
 #define LOOP_POOLING 86400
 
 /* integer to sum to get real episode/season number */
-#define INDEX_EPISODE 936
+#define INDEX_EPISODE 937
 #define INDEX_SEASON 967
 
 #define TERM_LANGAGE 17
@@ -58,6 +58,19 @@ typedef struct Torrent
   int episode;			/*!< Number of episode */
 } str_torrent;
 
+/**
+ * \struct str_torrent_config
+ * \brief Structure that contain result from t411 search
+ */
+typedef struct TorrentResult
+{
+  char name[128];		/*!< Label name of the torrent on t411 */
+  int id;			/*!< Id which identifies torrent in t411 database */
+  int seeders;			/*!< Number of seeders */
+  int leechers;			/*!< Number of leechers */
+  int size;			/*!< Size of the torrent in Mb */
+  int completed;		/*!< Number of times where the torrent was completed */
+} str_torrent_result;
 
 /**
  * \struct str_t411_config
