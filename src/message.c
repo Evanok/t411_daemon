@@ -430,6 +430,17 @@ int t411_api_search_torrent_from_config (str_t411_config* config)
       free (results);
 
       /* torrent found we can try to get next ! */
+
+      if (first_try)
+      {
+	config->torrents[torrent_index].episode++;
+      }
+      else
+      {
+	config->torrents[torrent_index].season++;
+	config->torrents[torrent_index].episode = 2;;
+      }
+
       first_try = 1;
       torrent_index++;
     }
