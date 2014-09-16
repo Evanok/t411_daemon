@@ -3,3 +3,4 @@
 To have this feature we can perhaps add a configure to set all value as --enable-debug, --disable-demon
 - Can see that I have strange result on gcov result. Need to investigate
 - Need to configure postfix to test send mail feature
+- Need to add a system to use transmission-remote and download automaticaly new detected torrent by the daemon
