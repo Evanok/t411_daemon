@@ -62,7 +62,6 @@ int t411_api_download_torrent (int id, str_t411_config* config)
   strncpy (name_tmp, "/tmp/t411-XXXXXX", 16);
 
   fd = mkstemp (name_tmp);
-  unlink (name_tmp);
 
   if (fd < 1)
   {
@@ -78,8 +77,10 @@ int t411_api_download_torrent (int id, str_t411_config* config)
     return 1;
   }
 
-  free (answer);
+  add_torrent_transmission (name_tmp);
 
+  free (answer);
+  unlink (name_tmp);
   return 0;
 }
 

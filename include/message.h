@@ -37,6 +37,7 @@
 
 #include "log.h"
 #include "t411_daemon.h"
+#include "remote_seedbox.h"
 
 struct MemoryStruct
 {

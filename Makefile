@@ -33,7 +33,7 @@ uninstall:
 	rm -rf /etc/$(BINARY).conf
 	rm -rf /usr/bin/$(BINARY)
 
-$(BINARY): src/t411_daemon.o src/config.o src/message.o
+$(BINARY): src/t411_daemon.o src/config.o src/remote_seedbox.o src/message.o
 	mkdir -p bin
 	$(CC) -o bin/$@ $^ $(LDFLAGS)
 
