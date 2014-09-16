@@ -4,6 +4,84 @@
 /* Array to fetch episode number and index of episode in t411 database */
 const int index_episode_tab[] = {0, 937, 938, 939, 940, 941, 942, 943, 944, 946, 947, 948, 949, 950, 951, 952, 954, 953, 955, 956, 957, 958, 959, 960, 961, 962, 963, 964, 965, 966, 967, 1088};
 
+/**
+ * \fn int t411_api_select_best_result (str_torrent_result* results, int nb_result)
+ * \brief find in torrent list, the best torrent
+ *
+ * \param results list of torrent
+ * \param nb_result number of torrent in the list of result
+ * \return int return id of the best torrent else 0
+ */
+int t411_api_select_best_result (str_torrent_result* results, int nb_result)
+{
+  int id = 0;
+  int index;
+  int max_completed = 0;
+
+  for (index = 0; index < nb_result; index++)
+  {
+    if (results[index].is_verified && results[index].size / O_TO_MO <= TORRENT_MAX_SIZE
+	&& results[index].completed >= max_completed)
+    {
+      max_completed = results[index].completed;
+      id = results[index].id;
+    }
+  }
+
+  T411_LOG (LOG_DEBUG, "Best id is %d\n", id);
+
+  return id;
+}
+
+
+/**
+ * \fn int t411_api_download_torrent (int id, str_t411_config* config)
+ * \brief Download torrent file from torrent id through t411 api
+ *
+ * \param id identification number of the torrent
+ * \param config Structure that contains torrents info
+ * \return int 0 if success else 1
+ */
+int t411_api_download_torrent (int id, str_t411_config* config)
+{
+  char url[256];
+  char* answer = NULL;
+  int fd;
+  char name_tmp[32];
+
+  sprintf (url, "%s%s%d", T411_API_URL, T411_API_DOWNLOAD_URL, id);
+  answer = process_http_message (url, NULL, config->token);
+
+  if (answer == NULL)
+  {
+    T411_LOG (LOG_ERR, "Torrent %d not found in t411 database\n", id);
+    return 1;
+  }
+
+  memset (name_tmp, 0, 32);
+  strncpy (name_tmp, "/tmp/t411-XXXXXX", 16);
+
+  fd = mkstemp (name_tmp);
+  unlink (name_tmp);
+
+  if (fd < 1)
+  {
+    T411_LOG (LOG_ERR, "Error during the mkstemp creation... fd : %d\n", fd);
+    return 1;
+  }
+
+  T411_LOG (LOG_DEBUG, "tmp name is %s\n", name_tmp);
+
+  if (write (fd, answer, strlen(answer)) == -1)
+  {
+    T411_LOG (LOG_ERR, "Error during the write process in %s\n", name_tmp);
+    return 1;
+  }
+
+  free (answer);
+
+  return 0;
+}
 
 /**
  * \fn int sendmail(const char *to, const char *from, const char *subject, const char *message)
@@ -185,7 +263,7 @@ static size_t WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *d
 }
 
 /**
- * \fn static char* process_http_message (char* url, char* message, char* token)
+ * \fn char* process_http_message (char* url, char* message, char* token)
  * \brief Generic function used to send data to t411 api
  *
  * \param url Url used to request http by libcurl
@@ -193,7 +271,7 @@ static size_t WriteMemoryCallback (void *ptr, size_t size, size_t nmemb, void *d
  * \param token Token needed by t411 api for authorization http header
  * \return String that contains answer from t411 api
  */
-static char* process_http_message (char* url, char* message, char* token)
+char* process_http_message (char* url, char* message, char* token)
 {
   CURLcode res;
   CURL *curl = NULL;
@@ -405,6 +483,7 @@ int t411_api_search_torrent_from_config (str_t411_config* config)
       int nb_result = 0;
       int result_index;
       str_torrent_result* results;
+      int id;
 
       extract_int_from_data(answer, "total", &nb_result);
       T411_LOG (LOG_DEBUG, "nb_result : %d\n", nb_result);
@@ -422,20 +501,26 @@ int t411_api_search_torrent_from_config (str_t411_config* config)
 	extract_int_from_data (tmp, "leechers", &(results[result_index].leechers));
 	extract_int_from_data (tmp, "size", &(results[result_index].size));
 	extract_int_from_data (tmp, "times_completed", &(results[result_index].completed));
+	extract_int_from_data (tmp, "isVerified", &(results[result_index].is_verified));
 	tmp = strstr (tmp, "}");
 	if (!tmp)
 	  break;
       }
-      dump_result (results, nb_result);
+      DUMP_RESULT (results, nb_result);
+
+      id = t411_api_select_best_result (results, nb_result);
+      if (id)
+	t411_api_download_torrent (id, config);
+
       free (results);
 
       /* torrent found we can try to get next ! */
 
-      if (first_try)
+      if (id && first_try)
       {
 	config->torrents[torrent_index].episode++;
       }
-      else
+      else if (id)
       {
 	config->torrents[torrent_index].season++;
 	config->torrents[torrent_index].episode = 2;;
@@ -447,9 +532,7 @@ int t411_api_search_torrent_from_config (str_t411_config* config)
     else
     {
       if (!first_try)
-      {
 	T411_LOG (LOG_DEBUG, "Torrent not found\n");
-      }
     }
     sleep (5);
     free (answer);

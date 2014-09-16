@@ -70,6 +70,7 @@ typedef struct TorrentResult
   int leechers;			/*!< Number of leechers */
   int size;			/*!< Size of the torrent in Mb */
   int completed;		/*!< Number of times where the torrent was completed */
+  int is_verified;		/*:< Indicate if the torrent is verified by the community */
 } str_torrent_result;
 
 /**

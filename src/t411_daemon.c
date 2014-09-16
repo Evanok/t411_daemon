@@ -126,7 +126,7 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   if (err) goto error;
 
   /* DEBUG */
-  dump_torrent (config);
+  DUMP_TORRENT (config);
 
   /* global init for curl*/
   curl_global_init(CURL_GLOBAL_ALL);
