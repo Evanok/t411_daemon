@@ -26,7 +26,7 @@
 #define LOOP_POOLING 86400
 
 /* integer to sum to get real episode/season number */
-#define INDEX_EPISODE 937
+#define INDEX_EPISODE 936
 #define INDEX_SEASON 967
 
 #define TERM_LANGAGE 17

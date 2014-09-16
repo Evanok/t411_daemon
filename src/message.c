@@ -1,5 +1,10 @@
 #include "message.h"
 
+
+/* Array to fetch episode number and index of episode in t411 database */
+const int index_episode_tab[] = {0, 937, 938, 939, 940, 941, 942, 943, 944, 946, 947, 948, 949, 950, 951, 952, 954, 953, 955, 956, 957, 958, 959, 960, 961, 962, 963, 964, 965, 966, 967, 1088};
+
+
 /**
  * \fn int sendmail(const char *to, const char *from, const char *subject, const char *message)
  * \brief Send message though email
@@ -375,7 +380,7 @@ int t411_api_search_torrent_from_config (str_t411_config* config)
     memset (url, 0, 256);
     if (first_try)
     {
-      sprintf (url, "%s%s%s&cid=%d&term[%d][]=%d&term[%d][]=%d&term[%d][]=%d", T411_API_URL, T411_API_TORRENT_SEARCH, config->torrents[torrent_index].name, config->torrents[torrent_index].type, TERM_LANGAGE, VOSTFR, TERM_SEASON, config->torrents[torrent_index].season + INDEX_SEASON, TERM_EPISODE, config->torrents[torrent_index].episode + INDEX_EPISODE);
+      sprintf (url, "%s%s%s&cid=%d&term[%d][]=%d&term[%d][]=%d&term[%d][]=%d", T411_API_URL, T411_API_TORRENT_SEARCH, config->torrents[torrent_index].name, config->torrents[torrent_index].type, TERM_LANGAGE, VOSTFR, TERM_SEASON, config->torrents[torrent_index].season + INDEX_SEASON, TERM_EPISODE, index_episode_tab[config->torrents[torrent_index].episode]);
       first_try = 0;
     }
     else
