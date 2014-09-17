@@ -75,10 +75,10 @@ doc:
 	cd doc && doxygen t411_doxygen.conf
 
 test:
-	make clean && make DEBUG=1 DEMON=0 && sh test/check.sh
+	make clean && make DEBUG=1 DEMON=1 && sh test/check.sh
 
 gcov:
-	make mrproper && make DEBUG=1 COVERAGE=1 DEMON=0
+	make mrproper && make DEBUG=1 COVERAGE=1 DEMON=1
 	sh test/check.sh
 	mkdir -p gcov
 	lcov --capture --directory . --output-file gcov/$(BINARY).info
