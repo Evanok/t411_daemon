@@ -1,4 +1,5 @@
 #include "remote_seedbox.h"
+#include "log.h"
 
 /**
  * \fn int add_torrent_transmission (char* file_name)

@@ -116,8 +116,11 @@ int main (int argc __attribute__((__unused__)), char* argv[])
   /* Check that we are running a single copy thanks to file locking feature */
   singleton ();
 
-  daemonize (argv[0]);
-  T411_LOG (LOG_INFO, "%s daemon started.", argv[0]);
+  if (DEMON)
+  {
+    daemonize (argv[0]);
+    T411_LOG (LOG_INFO, "%s daemon started.", argv[0]);
+  }
 
   /* init */
   memset (&config, 0, sizeof(str_t411_config));
@@ -136,15 +139,18 @@ int main (int argc __attribute__((__unused__)), char* argv[])
 
   T411_LOG (LOG_INFO, "%s is running...", argv[0]);
 
+  t411_api_search_torrent_from_config (&config);
+  //dump_config (&config);
+
   /* The Big Loop */
-  while (1)
+  while (DEMON)
   {
-    t411_api_search_torrent_from_config (&config);
-    //dump_config (&config);
     T411_LOG (LOG_INFO, "Next pooling in %d ...", LOOP_POOLING);
     sleep(LOOP_POOLING); /* wait 30 seconds */
-  }
 
+    t411_api_search_torrent_from_config (&config);
+    //dump_config (&config);
+  }
 
   error:
   T411_LOG (LOG_INFO, "%s daemon terminated.", argv[0]);

@@ -11,6 +11,13 @@ ifeq ($(COVERAGE), 1)
     LDFLAGS += --coverage
 endif
 
+DEMON ?= 1
+ifeq ($(DEMON), 1)
+    CFLAGS += -g -DDEMON
+else
+    CFLAGS += -g -DNODEMON
+endif
+
 BINARY = t411-daemon
 CFLAGS += -Werror -W -Wall -pedantic -Wformat -Wformat-security -Wextra
 CFLAGS += -Wextra -Wno-long-long -Wno-variadic-macros
@@ -68,12 +75,12 @@ doc:
 	cd doc && doxygen t411_doxygen.conf
 
 test:
-	make clean && make DEBUG=1 && sh test/check.sh
+	make clean && make DEBUG=1 DEMON=0 && sh test/check.sh
 
 gcov:
-	make mrproper && make DEBUG=1 COVERAGE=1
+	make mrproper && make DEBUG=1 COVERAGE=1 DEMON=0
 	sh test/check.sh
-	rm -rf gcov && mkdir -p gcov
+	mkdir -p gcov
 	lcov --capture --directory . --output-file gcov/$(BINARY).info
 	lcov --remove gcov/$(BINARY).info /usr/include/\* -o gcov/$(BINARY).info
 	genhtml gcov/$(BINARY).info --output-directory gcov/result

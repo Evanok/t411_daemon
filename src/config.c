@@ -80,13 +80,9 @@ static int extract_torrent_data (char* line, str_t411_config* config)
     goto error;
 
   if (config->nb_torrent == 0)
-  {
-    config->torrents = malloc(sizeof (*(config->torrents)) * (POOL_TORRENT));
-  }
+      config->torrents = malloc(sizeof (*(config->torrents)) * (POOL_TORRENT));
   else if (config->nb_torrent % 10 == 0)
-  {
-    config->torrents = realloc(config->torrents, sizeof (*(config->torrents)) * (config->nb_torrent + POOL_TORRENT));
-  }
+     config->torrents = realloc(config->torrents, sizeof (*(config->torrents)) * (config->nb_torrent + POOL_TORRENT));
 
   memcpy (&config->torrents[config->nb_torrent++], &new_torrent, sizeof (str_torrent));
 

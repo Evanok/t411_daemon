@@ -20,6 +20,10 @@
  #define DEBUG 0
 #endif
 
+#ifndef DEMON
+ #define DEMON 0
+#endif
+
 #define T411_LOG(a, ...) \
   do { if (DEBUG) fprintf(stderr, "\n[DEBUG] " __VA_ARGS__  ); else syslog(a, __VA_ARGS__);  } while (0)
 
