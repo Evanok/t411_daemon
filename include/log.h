@@ -14,6 +14,7 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <syslog.h>
+# include <stdio.h>
 
 #ifndef DEBUG
  #define DEBUG 0
